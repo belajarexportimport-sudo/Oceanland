@@ -524,6 +524,7 @@ export default function App() {
                       </label>
                     </div>
                     <p className="text-[10px] text-indigo-400 mt-2 italic text-center text-wrap">Format: .csv, .xlsx, .xls (Supports multiple sheets with names: Revenue, KPI, Budget)</p>
+                  </div>
                 </section>
 
                 {/* Summary Stats Section */}
