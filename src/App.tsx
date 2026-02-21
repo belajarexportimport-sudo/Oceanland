@@ -13,7 +13,7 @@ import {
   Briefcase, CheckCircle2, ChevronDown, Filter, Calendar,
   ArrowUpRight, ArrowDownRight, MessageSquare, ShoppingCart,
   Settings, X, Save, Plus, Trash2, Edit3, Box, Monitor, Building2,
-  Award, Medal, Clock
+  Award, Medal, Clock, UploadCloud
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
@@ -25,7 +25,6 @@ import {
   DIVISIONS, MOCK_BUDGET_DATA
 } from './constants';
 import { parseCSV, parseExcel, mapRevenueData, mapKPIData, mapBudgetData } from './utils/dataUtils';
-import { UploadCloud } from 'lucide-react';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -137,7 +136,6 @@ export default function App() {
           if (importedCount > 0) {
             alert(`Smart Import: Successfully imported ${importedCount} sheets!`);
           } else if (type !== 'all') {
-            // Fallback: take the first sheet if nothing matched but we expected a specific type
             const rows = sheets[sheetNames[0]];
             if (type === 'revenue') setRevenueData(mapRevenueData(rows));
             if (type === 'kpi') setKpiData(mapKPIData(rows));
@@ -145,7 +143,6 @@ export default function App() {
             alert(`Imported first sheet "${sheetNames[0]}" as ${type}.`);
           }
         } else {
-          // Only one sheet, treat as specific type
           const rows = sheets[sheetNames[0]];
           if (type === 'revenue') setRevenueData(mapRevenueData(rows));
           if (type === 'kpi') setKpiData(mapKPIData(rows));
@@ -157,7 +154,6 @@ export default function App() {
         alert("Failed to parse Excel file.");
       }
     } else {
-      // CSV Logic
       const reader = new FileReader();
       reader.onload = (event) => {
         const content = event.target?.result as string;
@@ -279,7 +275,7 @@ export default function App() {
           />
         </div>
 
-        {/* Assets Stats Cards (Second Row) */}
+        {/* Assets Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <StatCard
             title="Total Inventory Assets"
@@ -327,7 +323,6 @@ export default function App() {
 
         {/* Main Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Revenue vs Target */}
           <Card className="lg:col-span-2" title="Revenue vs Target Performance" subtitle="Monthly actual revenue vs set targets">
             <div className="h-[350px] w-full mt-4">
               <ResponsiveContainer width="100%" height="100%">
@@ -352,7 +347,6 @@ export default function App() {
             </div>
           </Card>
 
-          {/* Budget vs Actual */}
           <Card title="Budget vs Actual" subtitle="Comparison by category">
             <div className="h-[350px] w-full mt-4">
               <ResponsiveContainer width="100%" height="100%">
@@ -369,7 +363,6 @@ export default function App() {
             </div>
           </Card>
 
-          {/* Revenue Growth Rate */}
           <Card title="Revenue Growth Rate" subtitle="Quarterly percentage growth">
             <div className="h-[300px] w-full mt-4">
               <ResponsiveContainer width="100%" height="100%">
@@ -390,7 +383,6 @@ export default function App() {
             </div>
           </Card>
 
-          {/* Product Sales Distribution */}
           <Card title="Product Sales Distribution" subtitle="Revenue share by product category">
             <div className="h-[300px] w-full mt-4">
               <ResponsiveContainer width="100%" height="100%">
@@ -415,7 +407,6 @@ export default function App() {
             </div>
           </Card>
 
-          {/* Divisional KPI Progress */}
           <Card className="lg:col-span-1" title="Divisional KPI Progress" subtitle="Realization progress across departments">
             <div className="mt-6 space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
               {kpiData.map((kpi, idx) => (
@@ -498,7 +489,7 @@ export default function App() {
               </div>
 
               <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-                {/* Quick Import Section */}
+                {/* Bulk Import */}
                 <section className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
                   <h3 className="text-sm font-bold text-indigo-900 mb-3 flex items-center gap-2">
                     <UploadCloud className="w-5 h-5" />
@@ -506,28 +497,27 @@ export default function App() {
                   </h3>
                   <div className="flex flex-col gap-3">
                     <label className="w-full flex items-center justify-center p-3 bg-indigo-600 text-white rounded-xl cursor-pointer hover:bg-indigo-700 transition-all font-bold shadow-md">
-                      <span>✨ Smart Import (Auto-detect Sheets)</span>
+                      <span>Smart Import (Auto-detect Sheets)</span>
                       <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={(e) => handleFileUpload(e, 'all')} />
                     </label>
                     <div className="grid grid-cols-3 gap-2">
-                      <label className="flex flex-col items-center justify-center p-2 bg-white border border-indigo-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-all group">
+                      <label className="flex flex-col items-center justify-center p-2 bg-white border border-indigo-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-all">
                         <span className="text-[10px] font-bold text-indigo-600 uppercase">Monthly</span>
                         <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={(e) => handleFileUpload(e, 'revenue')} />
                       </label>
-                      <label className="flex flex-col items-center justify-center p-2 bg-white border border-indigo-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-all group">
+                      <label className="flex flex-col items-center justify-center p-2 bg-white border border-indigo-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-all">
                         <span className="text-[10px] font-bold text-indigo-600 uppercase">KPI Data</span>
                         <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={(e) => handleFileUpload(e, 'kpi')} />
                       </label>
-                      <label className="flex flex-col items-center justify-center p-2 bg-white border border-indigo-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-all group">
+                      <label className="flex flex-col items-center justify-center p-2 bg-white border border-indigo-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-all">
                         <span className="text-[10px] font-bold text-indigo-600 uppercase">Budget</span>
                         <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={(e) => handleFileUpload(e, 'budget')} />
                       </label>
                     </div>
-                    <p className="text-[10px] text-indigo-400 mt-2 italic text-center text-wrap">Format: .csv, .xlsx, .xls (Supports multiple sheets with names: Revenue, KPI, Budget)</p>
+                    <p className="text-[10px] text-indigo-400 mt-2 italic text-center">Format: .csv, .xlsx, .xls</p>
                   </div>
                 </section>
 
-                {/* Summary Stats Section */}
                 <section>
                   <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <Target className="w-4 h-4" />
@@ -536,66 +526,31 @@ export default function App() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-slate-500">Total Leads</label>
-                      <input
-                        type="number"
-                        value={stats.totalLeads}
-                        onChange={(e) => handleStatChange('totalLeads', parseInt(e.target.value) || 0)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      />
+                      <input type="number" value={stats.totalLeads} onChange={(e) => handleStatChange('totalLeads', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-slate-500">Total Expense (Rp)</label>
-                      <input
-                        type="number"
-                        value={stats.totalExpense}
-                        onChange={(e) => handleStatChange('totalExpense', parseInt(e.target.value) || 0)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      />
+                      <input type="number" value={stats.totalExpense} onChange={(e) => handleStatChange('totalExpense', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-slate-500">Total Profit (Rp)</label>
-                      <input
-                        type="number"
-                        value={stats.totalProfit}
-                        onChange={(e) => handleStatChange('totalProfit', parseInt(e.target.value) || 0)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      />
+                      <input type="number" value={stats.totalProfit} onChange={(e) => handleStatChange('totalProfit', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-slate-500">Margin (%)</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={stats.margin}
-                        onChange={(e) => handleStatChange('margin', parseFloat(e.target.value) || 0)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      />
+                      <input type="number" step="0.1" value={stats.margin} onChange={(e) => handleStatChange('margin', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-slate-500">Conversion Rate (%)</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={stats.conversionRate}
-                        onChange={(e) => handleStatChange('conversionRate', parseFloat(e.target.value) || 0)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      />
+                      <input type="number" step="0.1" value={stats.conversionRate} onChange={(e) => handleStatChange('conversionRate', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-slate-500">CSAT Score (0-5)</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        max="5"
-                        value={stats.customerSatisfaction}
-                        onChange={(e) => handleStatChange('customerSatisfaction', parseFloat(e.target.value) || 0)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      />
+                      <input type="number" step="0.1" max="5" value={stats.customerSatisfaction} onChange={(e) => handleStatChange('customerSatisfaction', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
                     </div>
                   </div>
                 </section>
 
-                {/* Assets Section */}
                 <section>
                   <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <Box className="w-4 h-4" />
@@ -604,35 +559,19 @@ export default function App() {
                   <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-slate-500">Total Inventory Assets</label>
-                      <input
-                        type="number"
-                        value={stats.totalInventoryAssets}
-                        onChange={(e) => handleStatChange('totalInventoryAssets', parseInt(e.target.value) || 0)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      />
+                      <input type="number" value={stats.totalInventoryAssets} onChange={(e) => handleStatChange('totalInventoryAssets', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-slate-500">Total Demo Assets</label>
-                      <input
-                        type="number"
-                        value={stats.totalDemoAssets}
-                        onChange={(e) => handleStatChange('totalDemoAssets', parseInt(e.target.value) || 0)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      />
+                      <input type="number" value={stats.totalDemoAssets} onChange={(e) => handleStatChange('totalDemoAssets', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-slate-500">Total Operational Office Assets</label>
-                      <input
-                        type="number"
-                        value={stats.totalOperationalOfficeAssets}
-                        onChange={(e) => handleStatChange('totalOperationalOfficeAssets', parseInt(e.target.value) || 0)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      />
+                      <input type="number" value={stats.totalOperationalOfficeAssets} onChange={(e) => handleStatChange('totalOperationalOfficeAssets', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
                     </div>
                   </div>
                 </section>
 
-                {/* Performance Section */}
                 <section>
                   <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <Award className="w-4 h-4" />
@@ -641,36 +580,21 @@ export default function App() {
                   <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-slate-500">Best Employee</label>
-                      <input
-                        type="text"
-                        value={stats.bestEmployee}
-                        onChange={(e) => setStats(prev => ({ ...prev, bestEmployee: e.target.value }))}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      />
+                      <input type="text" value={stats.bestEmployee} onChange={(e) => setStats(prev => ({ ...prev, bestEmployee: e.target.value }))} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-slate-500">Best Division</label>
-                      <select
-                        value={stats.bestDivision}
-                        onChange={(e) => setStats(prev => ({ ...prev, bestDivision: e.target.value }))}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      >
+                      <select value={stats.bestDivision} onChange={(e) => setStats(prev => ({ ...prev, bestDivision: e.target.value }))} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm">
                         {DIVISIONS.map(div => <option key={div} value={div}>{div}</option>)}
                       </select>
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-slate-500">Best Attendance</label>
-                      <input
-                        type="text"
-                        value={stats.bestAttendance}
-                        onChange={(e) => setStats(prev => ({ ...prev, bestAttendance: e.target.value }))}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      />
+                      <input type="text" value={stats.bestAttendance} onChange={(e) => setStats(prev => ({ ...prev, bestAttendance: e.target.value }))} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
                     </div>
                   </div>
                 </section>
 
-                {/* KPI Section */}
                 <section>
                   <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4" />
@@ -680,21 +604,13 @@ export default function App() {
                     {kpiData.map((kpi, idx) => (
                       <div key={idx} className="flex items-center gap-4">
                         <span className="text-xs font-medium text-slate-600 w-40 truncate">{kpi.division}</span>
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={kpi.progress}
-                          onChange={(e) => handleKpiChange(idx, 'progress', parseInt(e.target.value))}
-                          className="flex-1 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                        />
+                        <input type="range" min="0" max="100" value={kpi.progress} onChange={(e) => handleKpiChange(idx, 'progress', parseInt(e.target.value))} className="flex-1 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
                         <span className="text-xs font-bold text-slate-900 w-8">{kpi.progress}%</span>
                       </div>
                     ))}
                   </div>
                 </section>
 
-                {/* Monthly Revenue Section */}
                 <section>
                   <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <DollarSign className="w-4 h-4" />
@@ -709,41 +625,25 @@ export default function App() {
                         </div>
                         <div className="col-span-1">
                           <label className="text-[10px] font-bold text-slate-400 uppercase">Revenue</label>
-                          <input
-                            type="number"
-                            value={data.revenue}
-                            onChange={(e) => handleRevenueChange(idx, 'revenue', parseInt(e.target.value) || 0)}
-                            className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                          />
+                          <input type="number" value={data.revenue} onChange={(e) => handleRevenueChange(idx, 'revenue', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
                         </div>
                         <div className="col-span-1">
                           <label className="text-[10px] font-bold text-slate-400 uppercase">Target</label>
-                          <input
-                            type="number"
-                            value={data.target}
-                            onChange={(e) => handleRevenueChange(idx, 'target', parseInt(e.target.value) || 0)}
-                            className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                          />
+                          <input type="number" value={data.target} onChange={(e) => handleRevenueChange(idx, 'target', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
                         </div>
                         <div className="col-span-1">
                           <label className="text-[10px] font-bold text-slate-400 uppercase">Expense</label>
-                          <input
-                            type="number"
-                            value={data.expense}
-                            onChange={(e) => handleRevenueChange(idx, 'expense', parseInt(e.target.value) || 0)}
-                            className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                          />
+                          <input type="number" value={data.expense} onChange={(e) => handleRevenueChange(idx, 'expense', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
                         </div>
                       </div>
                     ))}
                   </div>
                 </section>
 
-                {/* Budget Section */}
                 <section>
                   <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <Briefcase className="w-4 h-4" />
-                    Budget vs Actual by Category
+                    Budget vs Actual
                   </h3>
                   <div className="space-y-4">
                     {budgetData.map((item, idx) => (
@@ -754,68 +654,43 @@ export default function App() {
                         </div>
                         <div className="col-span-1">
                           <label className="text-[10px] font-bold text-slate-400 uppercase">Budget</label>
-                          <input
-                            type="number"
-                            value={item.budget}
-                            onChange={(e) => handleBudgetChange(idx, 'budget', parseInt(e.target.value) || 0)}
-                            className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                          />
+                          <input type="number" value={item.budget} onChange={(e) => handleBudgetChange(idx, 'budget', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
                         </div>
                         <div className="col-span-1">
                           <label className="text-[10px] font-bold text-slate-400 uppercase">Actual</label>
-                          <input
-                            type="number"
-                            value={item.actual}
-                            onChange={(e) => handleBudgetChange(idx, 'actual', parseInt(e.target.value) || 0)}
-                            className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                          />
+                          <input type="number" value={item.actual} onChange={(e) => handleBudgetChange(idx, 'actual', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
                         </div>
                       </div>
                     ))}
                   </div>
                 </section>
 
-                {/* Product Sales Section */}
                 <section>
                   <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <ShoppingCart className="w-4 h-4" />
-                    Product Sales Distribution (%)
+                    Product Distribution (%)
                   </h3>
                   <div className="space-y-3">
                     {productSales.map((product, idx) => (
                       <div key={idx} className="flex items-center gap-4">
                         <span className="text-xs font-medium text-slate-600 w-32 truncate">{product.name}</span>
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={product.value}
-                          onChange={(e) => handleProductChange(idx, parseInt(e.target.value))}
-                          className="flex-1 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                        />
+                        <input type="range" min="0" max="100" value={product.value} onChange={(e) => handleProductChange(idx, parseInt(e.target.value))} className="flex-1 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
                         <span className="text-xs font-bold text-slate-900 w-8">{product.value}%</span>
                       </div>
                     ))}
                   </div>
                 </section>
 
-                {/* Growth Rate Section */}
                 <section>
                   <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <TrendingUp className="w-4 h-4" />
-                    Quarterly Growth Rate (%)
+                    Quarterly Growth (%)
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     {growthRate.map((q, idx) => (
                       <div key={idx} className="space-y-1">
                         <label className="text-xs font-medium text-slate-500">{q.period}</label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={q.rate}
-                          onChange={(e) => handleGrowthChange(idx, parseFloat(e.target.value) || 0)}
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
+                        <input type="number" step="0.1" value={q.rate} onChange={(e) => handleGrowthChange(idx, parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
                       </div>
                     ))}
                   </div>
@@ -828,20 +703,19 @@ export default function App() {
                     saveToDisk();
                     setShowEditPanel(false);
                   }}
-                  className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+                  className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-md flex items-center justify-center gap-2"
                 >
                   <Save className="w-5 h-5" />
-                  Save Changes & Persist
+                  Save & Persist
                 </button>
                 <button
                   onClick={() => {
-                    if (confirm("Reset all data to default? This cannot be undone.")) {
+                    if (confirm("Reset all data?")) {
                       localStorage.removeItem(STORAGE_KEY);
                       window.location.reload();
                     }
                   }}
-                  className="px-4 py-3 bg-red-50 text-red-600 rounded-xl font-medium hover:bg-red-100 transition-colors flex items-center justify-center"
-                  title="Reset to defaults"
+                  className="px-4 py-3 bg-red-50 text-red-600 rounded-xl font-medium hover:bg-red-100 transition-colors"
                 >
                   <Trash2 className="w-5 h-5" />
                 </button>
@@ -852,23 +726,14 @@ export default function App() {
       </AnimatePresence>
 
       <footer className="max-w-7xl mx-auto mt-12 pt-8 border-t border-slate-200 text-center text-slate-400 text-sm">
-        <p>© 2024 Executive Dashboard. All rights reserved.</p>
+        <p>(c) 2024 Executive Dashboard. All rights reserved.</p>
       </footer>
 
       <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f1f5f9;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
       `}</style>
     </div>
   );
@@ -876,18 +741,10 @@ export default function App() {
 
 function StatCard({ title, value, icon, trend, trendUp }: { title: string, value: string, icon: React.ReactNode, trend: string, trendUp: boolean }) {
   return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"
-    >
+    <motion.div whileHover={{ y: -4 }} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
       <div className="flex justify-between items-start mb-4">
-        <div className="p-2 bg-slate-50 rounded-lg">
-          {icon}
-        </div>
-        <div className={cn(
-          "flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full",
-          trendUp ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600"
-        )}>
+        <div className="p-2 bg-slate-50 rounded-lg">{icon}</div>
+        <div className={cn("flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full", trendUp ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600")}>
           {trendUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
           {trend}
         </div>
@@ -902,11 +759,7 @@ function StatCard({ title, value, icon, trend, trendUp }: { title: string, value
 
 function Card({ children, title, subtitle, className }: { children: React.ReactNode, title: string, subtitle?: string, className?: string }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className={cn("bg-white p-6 rounded-2xl border border-slate-200 shadow-sm", className)}
-    >
+    <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className={cn("bg-white p-6 rounded-2xl border border-slate-200 shadow-sm", className)}>
       <div className="mb-2">
         <h2 className="text-lg font-bold text-slate-900">{title}</h2>
         {subtitle && <p className="text-slate-500 text-sm">{subtitle}</p>}
