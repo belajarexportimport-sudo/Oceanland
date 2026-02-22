@@ -40,7 +40,7 @@ export default function App() {
 
   // Dashboard State
   const [kpiData, setKpiData] = useState(MOCK_KPI_DATA);
-  const [revenueData, setRevenueData] = useState(MOCK_REVENUE_DATA);
+  const [revenueData, setRevenueData] = useState(MOCK_REVENUE_DATA.filter(d => d.year === '2024'));
   const [budgetData, setBudgetData] = useState(MOCK_BUDGET_DATA);
   const [productSales, setProductSales] = useState(MOCK_PRODUCT_SALES);
   const [growthRate, setGrowthRate] = useState(MOCK_GROWTH_RATE);
@@ -188,7 +188,15 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3"
           >
-            <LayoutDashboard className="w-8 h-8 text-indigo-600" />
+            <img
+              src="/assets/logo.png"
+              alt="Logo"
+              className="h-12 w-auto object-contain"
+              onError={(e) => {
+                // Fallback in case image fails to load during dev
+                e.currentTarget.style.display = 'none';
+              }}
+            />
             Executive Summary Dashboard
           </motion.h1>
           <div className="flex items-center gap-2 mt-1">
@@ -221,7 +229,16 @@ export default function App() {
             Manage Data
           </button>
 
-          <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-sm">
+          <button
+            onClick={() => {
+              // Logic to filter data based on selectedYear
+              setRevenueData(MOCK_REVENUE_DATA.filter(d => d.year === selectedYear));
+              // Note: KPI and other mock data aren't year-specific yet in MOCK_KPI_DATA 
+              // but we can simulate changes or filter if they were.
+              alert(`Dashboard updated for year ${selectedYear}`);
+            }}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-sm"
+          >
             <Filter className="w-4 h-4" />
             Apply Filters
           </button>

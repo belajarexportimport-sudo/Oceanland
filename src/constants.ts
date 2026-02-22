@@ -23,18 +23,32 @@ export const MOCK_KPI_DATA: KPIData[] = DIVISIONS.map(div => ({
 }));
 
 export const MOCK_REVENUE_DATA: RevenueData[] = [
-  { month: 'Jan', revenue: 4500, target: 4000, expense: 3200 },
-  { month: 'Feb', revenue: 5200, target: 4200, expense: 3400 },
-  { month: 'Mar', revenue: 4800, target: 4500, expense: 3100 },
-  { month: 'Apr', revenue: 6100, target: 4800, expense: 3800 },
-  { month: 'May', revenue: 5900, target: 5000, expense: 3600 },
-  { month: 'Jun', revenue: 6800, target: 5500, expense: 4100 },
-  { month: 'Jul', revenue: 7200, target: 6000, expense: 4300 },
-  { month: 'Aug', revenue: 7100, target: 6200, expense: 4200 },
-  { month: 'Sep', revenue: 8500, target: 6500, expense: 4800 },
-  { month: 'Oct', revenue: 8200, target: 7000, expense: 4600 },
-  { month: 'Nov', revenue: 9400, target: 7500, expense: 5200 },
-  { month: 'Dec', revenue: 10500, target: 8000, expense: 5800 },
+  // 2024 Data
+  { month: 'Jan', revenue: 4500, target: 4000, expense: 3200, year: '2024' },
+  { month: 'Feb', revenue: 5200, target: 4200, expense: 3400, year: '2024' },
+  { month: 'Mar', revenue: 4800, target: 4500, expense: 3100, year: '2024' },
+  { month: 'Apr', revenue: 6100, target: 4800, expense: 3800, year: '2024' },
+  { month: 'May', revenue: 5900, target: 5000, expense: 3600, year: '2024' },
+  { month: 'Jun', revenue: 6800, target: 5500, expense: 4100, year: '2024' },
+  { month: 'Jul', revenue: 7200, target: 6000, expense: 4300, year: '2024' },
+  { month: 'Aug', revenue: 7100, target: 6200, expense: 4200, year: '2024' },
+  { month: 'Sep', revenue: 8500, target: 6500, expense: 4800, year: '2024' },
+  { month: 'Oct', revenue: 8200, target: 7000, expense: 4600, year: '2024' },
+  { month: 'Nov', revenue: 9400, target: 7500, expense: 5200, year: '2024' },
+  { month: 'Dec', revenue: 10500, target: 8000, expense: 5800, year: '2024' },
+  // 2023 Data (Sample)
+  { month: 'Jan', revenue: 3500, target: 3800, expense: 2800, year: '2023' },
+  { month: 'Feb', revenue: 4200, target: 4000, expense: 3000, year: '2023' },
+  { month: 'Mar', revenue: 3800, target: 4200, expense: 2900, year: '2023' },
+  { month: 'Apr', revenue: 5100, target: 4500, expense: 3400, year: '2023' },
+  { month: 'May', revenue: 4900, target: 4600, expense: 3200, year: '2023' },
+  { month: 'Jun', revenue: 5800, target: 5000, expense: 3700, year: '2023' },
+  { month: 'Jul', revenue: 6200, target: 5500, expense: 3900, year: '2023' },
+  { month: 'Aug', revenue: 6100, target: 5800, expense: 3800, year: '2023' },
+  { month: 'Sep', revenue: 7500, target: 6000, expense: 4400, year: '2023' },
+  { month: 'Oct', revenue: 7200, target: 6500, expense: 4200, year: '2023' },
+  { month: 'Nov', revenue: 8400, target: 7000, expense: 4800, year: '2023' },
+  { month: 'Dec', revenue: 9500, target: 7500, expense: 5300, year: '2023' },
 ];
 
 export const MOCK_PIPELINE_DATA: PipelineData[] = [

@@ -1,5 +1,5 @@
 
-export type Division = 
+export type Division =
   | 'Sales'
   | 'Business Development & Marketing'
   | 'Technical Support'
@@ -17,6 +17,7 @@ export interface KPIData {
   progress: number; // 0-100
   target: number;
   actual: number;
+  year?: string;
 }
 
 export interface RevenueData {
@@ -24,6 +25,7 @@ export interface RevenueData {
   revenue: number;
   target: number;
   expense: number;
+  year?: string;
 }
 
 export interface PipelineData {
