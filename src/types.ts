@@ -28,11 +28,6 @@ export interface RevenueData {
   year?: string;
 }
 
-export interface PipelineData {
-  stage: string;
-  value: number;
-  count: number;
-}
 
 export interface ProductSalesData {
   name: string;

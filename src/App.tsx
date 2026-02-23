@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  LineChart, Line, AreaChart, Area, PieChart, Pie, Cell, FunnelChart, Funnel, LabelList
+  LineChart, Line, AreaChart, Area, PieChart, Pie, Cell
 } from 'recharts';
 import {
   LayoutDashboard, Users, TrendingUp, DollarSign, Target,
@@ -20,7 +20,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 import {
-  MOCK_KPI_DATA, MOCK_REVENUE_DATA, MOCK_PIPELINE_DATA,
+  MOCK_KPI_DATA, MOCK_REVENUE_DATA,
   MOCK_PRODUCT_SALES, MOCK_GROWTH_RATE, SUMMARY_STATS,
   DIVISIONS, MOCK_BUDGET_DATA, MOCK_PROFIT_MARGIN_DATA,
   MOCK_CASHFLOW_DATA, MOCK_MARKET_SHARE_DATA, MOCK_SEGMENTATION_DATA,
@@ -49,7 +49,6 @@ export default function App() {
   const [growthRate, setGrowthRate] = useState(MOCK_GROWTH_RATE);
   const [stats, setStats] = useState(SUMMARY_STATS);
   const [recentInquiries, setRecentInquiries] = useState<any[]>([]);
-  const [pipelineData, setPipelineData] = useState(MOCK_PIPELINE_DATA);
   const [profitMarginData, setProfitMarginData] = useState(MOCK_PROFIT_MARGIN_DATA);
   const [cashFlowData, setCashFlowData] = useState(MOCK_CASHFLOW_DATA);
   const [marketShareData, setMarketShareData] = useState(MOCK_MARKET_SHARE_DATA);
@@ -71,7 +70,6 @@ export default function App() {
         if (parsed.growthRate) setGrowthRate(parsed.growthRate);
         if (parsed.stats) setStats(parsed.stats);
         if (parsed.recentInquiries) setRecentInquiries(parsed.recentInquiries);
-        if (parsed.pipelineData) setPipelineData(parsed.pipelineData);
         if (parsed.profitMarginData) setProfitMarginData(parsed.profitMarginData);
         if (parsed.cashFlowData) setCashFlowData(parsed.cashFlowData);
         if (parsed.marketShareData) setMarketShareData(parsed.marketShareData);
@@ -90,7 +88,6 @@ export default function App() {
         if (mapped.kpiData.length) setKpiData(mapped.kpiData);
         if (mapped.revenueData.length) setRevenueData(mapped.revenueData);
         if (mapped.budgetData.length) setBudgetData(mapped.budgetData);
-        if (mapped.pipelineData.length) setPipelineData(mapped.pipelineData);
         if (Object.keys(mapped.stats).length) setStats(mapped.stats);
         if (mapped.recentInquiries.length) setRecentInquiries(mapped.recentInquiries);
         setLastUpdated(new Date().toLocaleTimeString());
@@ -104,7 +101,7 @@ export default function App() {
   const saveToDisk = () => {
     const data = {
       kpiData, revenueData, budgetData, productSales,
-      growthRate, stats, recentInquiries, pipelineData,
+      growthRate, stats, recentInquiries,
       profitMarginData, cashFlowData, marketShareData, segmentationData,
       arTurnoverData
     };
@@ -143,12 +140,6 @@ export default function App() {
     const newData = [...growthRate];
     newData[index] = { ...newData[index], rate };
     setGrowthRate(newData);
-  };
-
-  const handlePipelineChange = (index: number, field: 'value' | 'count', value: number) => {
-    const newData = [...pipelineData];
-    newData[index] = { ...newData[index], [field]: value };
-    setPipelineData(newData);
   };
 
   const handleProfitMarginChange = (index: number, margin: number) => {
@@ -208,10 +199,6 @@ export default function App() {
             } else if (lowerName.includes('budget') || lowerName.includes('anggaran')) {
               setBudgetData(mapBudgetData(rows));
               importedCount++;
-            } else if (lowerName.includes('pipeline') || lowerName.includes('prospek')) {
-              const { mapPipelineData } = await import('./utils/dataUtils');
-              setPipelineData(mapPipelineData(rows));
-              importedCount++;
             } else if (lowerName.includes('turnover') || lowerName.includes('ar turnover')) {
               const { mapArTurnoverData } = await import('./utils/dataUtils');
               setArTurnoverData(mapArTurnoverData(rows));
@@ -248,10 +235,6 @@ export default function App() {
         if (type === 'revenue' || type === 'all') setRevenueData(mapRevenueData(rows));
         if (type === 'kpi' || type === 'all') setKpiData(mapKPIData(rows));
         if (type === 'budget' || type === 'all') setBudgetData(mapBudgetData(rows));
-        if (type === 'all') {
-          const { mapPipelineData } = await import('./utils/dataUtils');
-          setPipelineData(mapPipelineData(rows));
-        }
 
         alert(`Successfully imported ${rows.length} rows!`);
       };
@@ -508,26 +491,6 @@ export default function App() {
             </div>
           </Card>
 
-          <Card title="Sales Pipeline" subtitle="Conversion stages and deal volume">
-            <div className="h-[300px] w-full mt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <FunnelChart>
-                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                  <Funnel
-                    data={pipelineData}
-                    dataKey="value"
-                    nameKey="stage"
-                    labelLine={true}
-                  >
-                    <LabelList position="right" fill="#64748B" dataKey="stage" stroke="none" fontWeight="bold" />
-                    {pipelineData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Funnel>
-                </FunnelChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
 
           <Card title="Product Sales Distribution" subtitle="Revenue share by product category">
             <div className="h-[300px] w-full mt-4">
@@ -748,374 +711,353 @@ export default function App() {
 
       {/* Edit Panel Overlay */}
       <AnimatePresence>
-        {showEditPanel && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowEditPanel(false)}
-              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40"
-            />
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed right-0 top-0 bottom-0 w-full max-w-xl bg-white shadow-2xl z-50 flex flex-col"
-            >
-              <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0">
-                <div>
-                  <h2 className="text-xl font-bold text-slate-900">Manage Dashboard Data</h2>
-                  <p className="text-sm text-slate-500">Update values to see live changes</p>
+        {
+          showEditPanel && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowEditPanel(false)}
+                className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40"
+              />
+              <motion.div
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="fixed right-0 top-0 bottom-0 w-full max-w-xl bg-white shadow-2xl z-50 flex flex-col"
+              >
+                <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0">
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900">Manage Dashboard Data</h2>
+                    <p className="text-sm text-slate-500">Update values to see live changes</p>
+                  </div>
+                  <button
+                    onClick={() => setShowEditPanel(false)}
+                    className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                  >
+                    <X className="w-5 h-5 text-slate-500" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setShowEditPanel(false)}
-                  className="p-2 hover:bg-slate-100 rounded-full transition-colors"
-                >
-                  <X className="w-5 h-5 text-slate-500" />
-                </button>
-              </div>
 
-              <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-                {/* Bulk Import */}
-                <section className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
-                  <h3 className="text-sm font-bold text-indigo-900 mb-3 flex items-center gap-2">
-                    <UploadCloud className="w-5 h-5" />
-                    Bulk Import (CSV/Excel)
-                  </h3>
-                  <div className="flex flex-col gap-3">
-                    <label className="w-full flex items-center justify-center p-3 bg-indigo-600 text-white rounded-xl cursor-pointer hover:bg-indigo-700 transition-all font-bold shadow-md">
-                      <span>Smart Import (Auto-detect Sheets)</span>
-                      <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={(e) => handleFileUpload(e, 'all')} />
-                    </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      <label className="flex flex-col items-center justify-center p-2 bg-white border border-indigo-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-all">
-                        <span className="text-[10px] font-bold text-indigo-600 uppercase">Monthly</span>
-                        <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={(e) => handleFileUpload(e, 'revenue')} />
+                <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+                  {/* Bulk Import */}
+                  <section className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                    <h3 className="text-sm font-bold text-indigo-900 mb-3 flex items-center gap-2">
+                      <UploadCloud className="w-5 h-5" />
+                      Bulk Import (CSV/Excel)
+                    </h3>
+                    <div className="flex flex-col gap-3">
+                      <label className="w-full flex items-center justify-center p-3 bg-indigo-600 text-white rounded-xl cursor-pointer hover:bg-indigo-700 transition-all font-bold shadow-md">
+                        <span>Smart Import (Auto-detect Sheets)</span>
+                        <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={(e) => handleFileUpload(e, 'all')} />
                       </label>
-                      <label className="flex flex-col items-center justify-center p-2 bg-white border border-indigo-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-all">
-                        <span className="text-[10px] font-bold text-indigo-600 uppercase">KPI Data</span>
-                        <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={(e) => handleFileUpload(e, 'kpi')} />
-                      </label>
-                      <label className="flex flex-col items-center justify-center p-2 bg-white border border-indigo-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-all">
-                        <span className="text-[10px] font-bold text-indigo-600 uppercase">Budget</span>
-                        <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={(e) => handleFileUpload(e, 'budget')} />
-                      </label>
-                    </div>
-                    <p className="text-[10px] text-indigo-400 mt-2 italic text-center">Format: .csv, .xlsx, .xls</p>
-                  </div>
-                </section>
-
-                <section>
-                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Target className="w-4 h-4" />
-                    Summary Statistics
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-500">Total Leads</label>
-                      <input type="number" value={stats.totalLeads} onChange={(e) => handleStatChange('totalLeads', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-500">Total Expense (Rp)</label>
-                      <input type="number" value={stats.totalExpense} onChange={(e) => handleStatChange('totalExpense', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-500">Total Profit (Rp)</label>
-                      <input type="number" value={stats.totalProfit} onChange={(e) => handleStatChange('totalProfit', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-500">Margin (%)</label>
-                      <input type="number" step="0.1" value={stats.margin} onChange={(e) => handleStatChange('margin', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-500">Conversion Rate (%)</label>
-                      <input type="number" step="0.1" value={stats.conversionRate} onChange={(e) => handleStatChange('conversionRate', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-500">CSAT Score (0-5)</label>
-                      <input type="number" step="0.1" max="5" value={stats.customerSatisfaction} onChange={(e) => handleStatChange('customerSatisfaction', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
-                    </div>
-                  </div>
-                </section>
-
-                <section>
-                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Box className="w-4 h-4" />
-                    Asset Management (Rp)
-                  </h3>
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-500">Total Inventory Assets</label>
-                      <input type="number" value={stats.totalInventoryAssets} onChange={(e) => handleStatChange('totalInventoryAssets', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-500">Total Demo Assets</label>
-                      <input type="number" value={stats.totalDemoAssets} onChange={(e) => handleStatChange('totalDemoAssets', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-500">Total Operational Office Assets</label>
-                      <input type="number" value={stats.totalOperationalOfficeAssets} onChange={(e) => handleStatChange('totalOperationalOfficeAssets', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
-                    </div>
-                  </div>
-                </section>
-
-                <section>
-                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Award className="w-4 h-4" />
-                    Performance Highlights
-                  </h3>
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-500">Best Employee</label>
-                      <input type="text" value={stats.bestEmployee} onChange={(e) => setStats(prev => ({ ...prev, bestEmployee: e.target.value }))} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-500">Best Division</label>
-                      <select value={stats.bestDivision} onChange={(e) => setStats(prev => ({ ...prev, bestDivision: e.target.value }))} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm">
-                        {DIVISIONS.map(div => <option key={div} value={div}>{div}</option>)}
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-500">Best Attendance</label>
-                      <input type="text" value={stats.bestAttendance} onChange={(e) => setStats(prev => ({ ...prev, bestAttendance: e.target.value }))} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
-                    </div>
-                  </div>
-                </section>
-
-                <section>
-                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4" />
-                    Divisional KPI Progress (%)
-                  </h3>
-                  <div className="space-y-3">
-                    {kpiData.map((kpi, idx) => (
-                      <div key={idx} className="flex items-center gap-4">
-                        <span className="text-xs font-medium text-slate-600 w-40 truncate">{kpi.division}</span>
-                        <input type="range" min="0" max="100" value={kpi.progress} onChange={(e) => handleKpiChange(idx, 'progress', parseInt(e.target.value))} className="flex-1 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
-                        <span className="text-xs font-bold text-slate-900 w-8">{kpi.progress}%</span>
+                      <div className="grid grid-cols-3 gap-2">
+                        <label className="flex flex-col items-center justify-center p-2 bg-white border border-indigo-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-all">
+                          <span className="text-[10px] font-bold text-indigo-600 uppercase">Monthly</span>
+                          <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={(e) => handleFileUpload(e, 'revenue')} />
+                        </label>
+                        <label className="flex flex-col items-center justify-center p-2 bg-white border border-indigo-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-all">
+                          <span className="text-[10px] font-bold text-indigo-600 uppercase">KPI Data</span>
+                          <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={(e) => handleFileUpload(e, 'kpi')} />
+                        </label>
+                        <label className="flex flex-col items-center justify-center p-2 bg-white border border-indigo-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-all">
+                          <span className="text-[10px] font-bold text-indigo-600 uppercase">Budget</span>
+                          <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={(e) => handleFileUpload(e, 'budget')} />
+                        </label>
                       </div>
-                    ))}
-                  </div>
-                </section>
+                      <p className="text-[10px] text-indigo-400 mt-2 italic text-center">Format: .csv, .xlsx, .xls</p>
+                    </div>
+                  </section>
 
-                <section>
-                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <DollarSign className="w-4 h-4" />
-                    Monthly Financials
-                  </h3>
-                  <div className="space-y-4">
-                    {revenueData.map((data, idx) => (
-                      <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 grid grid-cols-4 gap-3 items-end">
-                        <div className="col-span-1">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase">Month</label>
-                          <div className="text-sm font-bold text-slate-700">{data.month}</div>
-                        </div>
-                        <div className="col-span-1">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase">Revenue</label>
-                          <input type="number" value={data.revenue} onChange={(e) => handleRevenueChange(idx, 'revenue', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
-                        </div>
-                        <div className="col-span-1">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase">Target</label>
-                          <input type="number" value={data.target} onChange={(e) => handleRevenueChange(idx, 'target', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
-                        </div>
-                        <div className="col-span-1">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase">Expense</label>
-                          <input type="number" value={data.expense} onChange={(e) => handleRevenueChange(idx, 'expense', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
-                        </div>
+                  <section>
+                    <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <Target className="w-4 h-4" />
+                      Summary Statistics
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-500">Total Leads</label>
+                        <input type="number" value={stats.totalLeads} onChange={(e) => handleStatChange('totalLeads', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
                       </div>
-                    ))}
-                  </div>
-                </section>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-500">Total Expense (Rp)</label>
+                        <input type="number" value={stats.totalExpense} onChange={(e) => handleStatChange('totalExpense', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-500">Total Profit (Rp)</label>
+                        <input type="number" value={stats.totalProfit} onChange={(e) => handleStatChange('totalProfit', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-500">Margin (%)</label>
+                        <input type="number" step="0.1" value={stats.margin} onChange={(e) => handleStatChange('margin', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-500">Conversion Rate (%)</label>
+                        <input type="number" step="0.1" value={stats.conversionRate} onChange={(e) => handleStatChange('conversionRate', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-500">CSAT Score (0-5)</label>
+                        <input type="number" step="0.1" max="5" value={stats.customerSatisfaction} onChange={(e) => handleStatChange('customerSatisfaction', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
+                      </div>
+                    </div>
+                  </section>
 
-                <section>
-                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Briefcase className="w-4 h-4" />
-                    Budget vs Actual
-                  </h3>
-                  <div className="space-y-4">
-                    {budgetData.map((item, idx) => (
-                      <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 grid grid-cols-3 gap-3 items-end">
-                        <div className="col-span-1">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase">Category</label>
-                          <div className="text-xs font-bold text-slate-700 truncate">{item.category}</div>
+                  <section>
+                    <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <Box className="w-4 h-4" />
+                      Asset Management (Rp)
+                    </h3>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-500">Total Inventory Assets</label>
+                        <input type="number" value={stats.totalInventoryAssets} onChange={(e) => handleStatChange('totalInventoryAssets', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-500">Total Demo Assets</label>
+                        <input type="number" value={stats.totalDemoAssets} onChange={(e) => handleStatChange('totalDemoAssets', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-500">Total Operational Office Assets</label>
+                        <input type="number" value={stats.totalOperationalOfficeAssets} onChange={(e) => handleStatChange('totalOperationalOfficeAssets', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <Award className="w-4 h-4" />
+                      Performance Highlights
+                    </h3>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-500">Best Employee</label>
+                        <input type="text" value={stats.bestEmployee} onChange={(e) => setStats(prev => ({ ...prev, bestEmployee: e.target.value }))} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-500">Best Division</label>
+                        <select value={stats.bestDivision} onChange={(e) => setStats(prev => ({ ...prev, bestDivision: e.target.value }))} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm">
+                          {DIVISIONS.map(div => <option key={div} value={div}>{div}</option>)}
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-500">Best Attendance</label>
+                        <input type="text" value={stats.bestAttendance} onChange={(e) => setStats(prev => ({ ...prev, bestAttendance: e.target.value }))} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Divisional KPI Progress (%)
+                    </h3>
+                    <div className="space-y-3">
+                      {kpiData.map((kpi, idx) => (
+                        <div key={idx} className="flex items-center gap-4">
+                          <span className="text-xs font-medium text-slate-600 w-40 truncate">{kpi.division}</span>
+                          <input type="range" min="0" max="100" value={kpi.progress} onChange={(e) => handleKpiChange(idx, 'progress', parseInt(e.target.value))} className="flex-1 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
+                          <span className="text-xs font-bold text-slate-900 w-8">{kpi.progress}%</span>
                         </div>
-                        <div className="col-span-1">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase">Budget</label>
-                          <input type="number" value={item.budget} onChange={(e) => handleBudgetChange(idx, 'budget', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                      ))}
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <DollarSign className="w-4 h-4" />
+                      Monthly Financials
+                    </h3>
+                    <div className="space-y-4">
+                      {revenueData.map((data, idx) => (
+                        <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 grid grid-cols-4 gap-3 items-end">
+                          <div className="col-span-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase">Month</label>
+                            <div className="text-sm font-bold text-slate-700">{data.month}</div>
+                          </div>
+                          <div className="col-span-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase">Revenue</label>
+                            <input type="number" value={data.revenue} onChange={(e) => handleRevenueChange(idx, 'revenue', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                          </div>
+                          <div className="col-span-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase">Target</label>
+                            <input type="number" value={data.target} onChange={(e) => handleRevenueChange(idx, 'target', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                          </div>
+                          <div className="col-span-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase">Expense</label>
+                            <input type="number" value={data.expense} onChange={(e) => handleRevenueChange(idx, 'expense', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                          </div>
                         </div>
-                        <div className="col-span-1">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase">Actual</label>
-                          <input type="number" value={item.actual} onChange={(e) => handleBudgetChange(idx, 'actual', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                      ))}
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <Briefcase className="w-4 h-4" />
+                      Budget vs Actual
+                    </h3>
+                    <div className="space-y-4">
+                      {budgetData.map((item, idx) => (
+                        <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 grid grid-cols-3 gap-3 items-end">
+                          <div className="col-span-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase">Category</label>
+                            <div className="text-xs font-bold text-slate-700 truncate">{item.category}</div>
+                          </div>
+                          <div className="col-span-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase">Budget</label>
+                            <input type="number" value={item.budget} onChange={(e) => handleBudgetChange(idx, 'budget', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                          </div>
+                          <div className="col-span-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase">Actual</label>
+                            <input type="number" value={item.actual} onChange={(e) => handleBudgetChange(idx, 'actual', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
+                      ))}
+                    </div>
+                  </section>
 
-                <section>
-                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <ShoppingCart className="w-4 h-4" />
-                    Product Distribution (%)
-                  </h3>
-                  <div className="space-y-3">
-                    {productSales.map((product, idx) => (
-                      <div key={idx} className="flex items-center gap-4">
-                        <span className="text-xs font-medium text-slate-600 w-32 truncate">{product.name}</span>
-                        <input type="range" min="0" max="100" value={product.value} onChange={(e) => handleProductChange(idx, parseInt(e.target.value))} className="flex-1 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
-                        <span className="text-xs font-bold text-slate-900 w-8">{product.value}%</span>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                <section>
-                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4" />
-                    Quarterly Growth (%)
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    {growthRate.map((q, idx) => (
-                      <div key={idx} className="space-y-1">
-                        <label className="text-xs font-medium text-slate-500">{q.period}</label>
-                        <input type="number" step="0.1" value={q.rate} onChange={(e) => handleGrowthChange(idx, parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                <section>
-                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Target className="w-4 h-4" />
-                    Sales Pipeline
-                  </h3>
-                  <div className="space-y-4">
-                    {pipelineData.map((stage, idx) => (
-                      <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 grid grid-cols-2 gap-3 items-end">
-                        <div className="col-span-1">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase">{stage.stage}</label>
-                          <div className="text-[10px] text-slate-400">Value (Rp)</div>
-                          <input type="number" value={stage.value} onChange={(e) => handlePipelineChange(idx, 'value', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                  <section>
+                    <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <ShoppingCart className="w-4 h-4" />
+                      Product Distribution (%)
+                    </h3>
+                    <div className="space-y-3">
+                      {productSales.map((product, idx) => (
+                        <div key={idx} className="flex items-center gap-4">
+                          <span className="text-xs font-medium text-slate-600 w-32 truncate">{product.name}</span>
+                          <input type="range" min="0" max="100" value={product.value} onChange={(e) => handleProductChange(idx, parseInt(e.target.value))} className="flex-1 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
+                          <span className="text-xs font-bold text-slate-900 w-8">{product.value}%</span>
                         </div>
-                        <div className="col-span-1">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase">Count</label>
-                          <input type="number" value={stage.count} onChange={(e) => handlePipelineChange(idx, 'count', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                      ))}
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4" />
+                      Quarterly Growth (%)
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      {growthRate.map((q, idx) => (
+                        <div key={idx} className="space-y-1">
+                          <label className="text-xs font-medium text-slate-500">{q.period}</label>
+                          <input type="number" step="0.1" value={q.rate} onChange={(e) => handleGrowthChange(idx, parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
+                      ))}
+                    </div>
+                  </section>
 
-                <section>
-                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4" />
-                    Net Profit Margin (%)
-                  </h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    {profitMarginData.map((data, idx) => (
-                      <div key={idx} className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase">{data.month}</label>
-                        <input type="number" step="0.1" value={data.margin} onChange={(e) => handleProfitMarginChange(idx, parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs" />
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                <section>
-                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <DollarSign className="w-4 h-4" />
-                    Cash Flow Analysis
-                  </h3>
-                  <div className="space-y-4">
-                    {cashFlowData.map((data, idx) => (
-                      <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 grid grid-cols-3 gap-2 items-end">
-                        <div className="col-span-1 text-xs font-bold text-slate-700">{data.month}</div>
-                        <div className="col-span-1">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase">Inflow</label>
-                          <input type="number" value={data.inflow} onChange={(e) => handleCashFlowChange(idx, 'inflow', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                  <section>
+                    <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4" />
+                      Net Profit Margin (%)
+                    </h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      {profitMarginData.map((data, idx) => (
+                        <div key={idx} className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase">{data.month}</label>
+                          <input type="number" step="0.1" value={data.margin} onChange={(e) => handleProfitMarginChange(idx, parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs" />
                         </div>
-                        <div className="col-span-1">
-                          <label className="text-[10px] font-bold text-slate-400 uppercase">Outflow</label>
-                          <input type="number" value={data.outflow} onChange={(e) => handleCashFlowChange(idx, 'outflow', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                      ))}
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <DollarSign className="w-4 h-4" />
+                      Cash Flow Analysis
+                    </h3>
+                    <div className="space-y-4">
+                      {cashFlowData.map((data, idx) => (
+                        <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 grid grid-cols-3 gap-2 items-end">
+                          <div className="col-span-1 text-xs font-bold text-slate-700">{data.month}</div>
+                          <div className="col-span-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase">Inflow</label>
+                            <input type="number" value={data.inflow} onChange={(e) => handleCashFlowChange(idx, 'inflow', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                          </div>
+                          <div className="col-span-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase">Outflow</label>
+                            <input type="number" value={data.outflow} onChange={(e) => handleCashFlowChange(idx, 'outflow', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
+                      ))}
+                    </div>
+                  </section>
 
-                <section>
-                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    Market Share (%)
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {marketShareData.map((item, idx) => (
-                      <div key={idx} className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase">{item.name}</label>
-                        <input type="number" value={item.value} onChange={(e) => handleMarketShareChange(idx, parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs" />
-                      </div>
-                    ))}
-                  </div>
-                </section>
+                  <section>
+                    <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      Market Share (%)
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      {marketShareData.map((item, idx) => (
+                        <div key={idx} className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase">{item.name}</label>
+                          <input type="number" value={item.value} onChange={(e) => handleMarketShareChange(idx, parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs" />
+                        </div>
+                      ))}
+                    </div>
+                  </section>
 
-                <section>
-                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Monitor className="w-4 h-4" />
-                    Market Segmentation
-                  </h3>
-                  <div className="space-y-3">
-                    {segmentationData.map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-4">
-                        <span className="text-xs font-medium text-slate-600 w-32 truncate">{item.segment}</span>
-                        <input type="number" value={item.value} onChange={(e) => handleSegmentationChange(idx, parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs flex-1" />
-                      </div>
-                    ))}
-                  </div>
-                </section>
+                  <section>
+                    <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <Monitor className="w-4 h-4" />
+                      Market Segmentation
+                    </h3>
+                    <div className="space-y-3">
+                      {segmentationData.map((item, idx) => (
+                        <div key={idx} className="flex items-center gap-4">
+                          <span className="text-xs font-medium text-slate-600 w-32 truncate">{item.segment}</span>
+                          <input type="number" value={item.value} onChange={(e) => handleSegmentationChange(idx, parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs flex-1" />
+                        </div>
+                      ))}
+                    </div>
+                  </section>
 
-                <section>
-                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4" />
-                    AR Turnover Ratio
-                  </h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    {arTurnoverData.map((data, idx) => (
-                      <div key={idx} className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase">{data.month}</label>
-                        <input type="number" step="0.1" value={data.ratio} onChange={(e) => handleArTurnoverChange(idx, parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs" />
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              </div>
+                  <section>
+                    <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4" />
+                      AR Turnover Ratio
+                    </h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      {arTurnoverData.map((data, idx) => (
+                        <div key={idx} className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase">{data.month}</label>
+                          <input type="number" step="0.1" value={data.ratio} onChange={(e) => handleArTurnoverChange(idx, parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs" />
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </div>
 
-              <div className="p-6 border-t border-slate-100 bg-slate-50 flex gap-3">
-                <button
-                  onClick={() => {
-                    saveToDisk();
-                    setShowEditPanel(false);
-                  }}
-                  className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-md flex items-center justify-center gap-2"
-                >
-                  <Save className="w-5 h-5" />
-                  Save & Persist
-                </button>
-                <button
-                  onClick={() => {
-                    if (confirm("Reset all data?")) {
-                      localStorage.removeItem(STORAGE_KEY);
-                      window.location.reload();
-                    }
-                  }}
-                  className="px-4 py-3 bg-red-50 text-red-600 rounded-xl font-medium hover:bg-red-100 transition-colors"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
+                <div className="p-6 border-t border-slate-100 bg-slate-50 flex gap-3">
+                  <button
+                    onClick={() => {
+                      saveToDisk();
+                      setShowEditPanel(false);
+                    }}
+                    className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-md flex items-center justify-center gap-2"
+                  >
+                    <Save className="w-5 h-5" />
+                    Save & Persist
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm("Reset all data?")) {
+                        localStorage.removeItem(STORAGE_KEY);
+                        window.location.reload();
+                      }
+                    }}
+                    className="px-4 py-3 bg-red-50 text-red-600 rounded-xl font-medium hover:bg-red-100 transition-colors"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
       </AnimatePresence>
 
       <footer className="max-w-7xl mx-auto mt-12 pt-8 border-t border-slate-200 text-center text-slate-400 text-sm">
@@ -1128,7 +1070,7 @@ export default function App() {
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
       `}</style>
-    </div>
+    </div >
   );
 }
 

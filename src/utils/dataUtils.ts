@@ -67,13 +67,6 @@ export const mapBudgetData = (rows: any[]) => {
     }));
 };
 
-export const mapPipelineData = (rows: any[]) => {
-    return rows.map(row => ({
-        stage: row.stage || row.Stage || 'Unknown',
-        value: parseInt(row.value || row.Value) || 0,
-        count: parseInt(row.count || row.Count) || 0
-    }));
-};
 
 export const mapArTurnoverData = (rows: any[]) => {
     return rows.map(row => ({

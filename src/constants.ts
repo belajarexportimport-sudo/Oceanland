@@ -1,5 +1,5 @@
 
-import { KPIData, RevenueData, PipelineData, ProductSalesData, GrowthRateData, Division, ProfitMarginData, CashFlowData, MarketSegmentData, ARTurnoverData } from './types';
+import { KPIData, RevenueData, ProductSalesData, GrowthRateData, Division, ProfitMarginData, CashFlowData, MarketSegmentData, ARTurnoverData } from './types';
 
 export const DIVISIONS: Division[] = [
   'Sales',
@@ -51,13 +51,6 @@ export const MOCK_REVENUE_DATA: RevenueData[] = [
   { month: 'Dec', revenue: 9500, target: 7500, expense: 5300, year: '2023' },
 ];
 
-export const MOCK_PIPELINE_DATA: PipelineData[] = [
-  { stage: 'Prospecting', value: 1200000, count: 45 },
-  { stage: 'Qualification', value: 850000, count: 32 },
-  { stage: 'Proposal', value: 600000, count: 18 },
-  { stage: 'Negotiation', value: 450000, count: 12 },
-  { stage: 'Closed Won', value: 300000, count: 8 },
-];
 
 export const MOCK_PRODUCT_SALES: ProductSalesData[] = [
   { name: 'Spare Parts', value: 35 },
