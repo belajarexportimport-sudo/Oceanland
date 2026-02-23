@@ -34,7 +34,7 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316'];
+const COLORS = ['#3B82F6', '#FF7A30', '#10B981', '#8B5CF6', '#F59E0B', '#6366F1'];
 const STORAGE_KEY = 'oseanland_dashboard_data';
 
 export default function App() {
@@ -250,9 +250,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFCFB] text-slate-900 font-sans relative overflow-x-hidden">
-      {/* Premium Orange Header */}
-      <div className="bg-[#FF7A30] pb-32 pt-8 px-4 md:px-8 shadow-inner">
+    <div className="min-h-screen bg-gradient-to-br from-[#FF8C42] via-[#FFB382] to-[#FFF5ED] text-slate-900 font-sans relative overflow-x-hidden">
+      {/* Premium Header - Transparent or Integrated */}
+      <div className="pt-12 pb-24 px-4 md:px-8">
         <header className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
             <div className="p-2 bg-white rounded-2xl shadow-xl border border-white/20 flex items-center justify-center">
@@ -341,15 +341,22 @@ export default function App() {
         )}
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 md:px-8 -mt-20 space-y-8 pb-16">
-        {/* Summary Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 -mt-12 space-y-12 pb-16">
+        {/* Row 1: Primary Stats (4 Cards) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Total Leads"
             value={stats.totalLeads.toLocaleString()}
             icon={<Users className="w-5 h-5 text-blue-600" />}
             trend="+12.5%"
             trendUp={true}
+          />
+          <StatCard
+            title="Total Expense"
+            value={formatCurrency(stats.totalExpense)}
+            icon={<span className="font-bold text-red-600 text-lg">Rp</span>}
+            trend="+5.4%"
+            trendUp={false}
           />
           <StatCard
             title="Total Profit"
@@ -365,23 +372,9 @@ export default function App() {
             trend="+2.1%"
             trendUp={true}
           />
-          <StatCard
-            title="Sales Conversion"
-            value={`${stats.conversionRate}%`}
-            icon={<TrendingUp className="w-5 h-5 text-emerald-600" />}
-            trend="+0.8%"
-            trendUp={true}
-          />
-          <StatCard
-            title="Customer Satisfaction"
-            value={`${stats.customerSatisfaction}/5.0`}
-            icon={<MessageSquare className="w-5 h-5 text-amber-600" />}
-            trend="+0.2"
-            trendUp={true}
-          />
         </div>
 
-        {/* Assets Stats Cards */}
+        {/* Row 2: Asset Stats (3 Cards) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <StatCard
             title="Total Inventory Assets"
@@ -404,6 +397,10 @@ export default function App() {
             trend="+0.8%"
             trendUp={true}
           />
+        </div>
+
+        {/* Row 3: Performance Highlights (3 Cards) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <StatCard
             title="Best Employee Performance"
             value={stats.bestEmployee}
@@ -429,25 +426,25 @@ export default function App() {
 
         {/* Main Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2" title="Revenue vs Target Performance" subtitle="Monthly actual revenue vs set targets">
+          <Card className="lg:col-span-2" title="Revenue vs Target Performance" subtitle="Monthly actual revenue vs targets">
             <div className="h-[350px] w-full mt-4">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={revenueData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: '#64748B', fontSize: 10 }}
+                    tick={{ fill: '#94A3B8', fontSize: 10 }}
                     tickFormatter={(value) => `Rp${(value / 1000).toFixed(0)}k`}
                   />
                   <Tooltip
                     formatter={(value: number) => formatCurrency(value)}
-                    contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
                   />
                   <Legend iconType="circle" />
-                  <Bar dataKey="revenue" name="Actual Revenue" fill="#4F46E5" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="target" name="Target" fill="#94A3B8" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="revenue" name="Actual Revenue" fill="#3B82F6" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="target" name="Target" fill="#E2E8F0" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -483,7 +480,7 @@ export default function App() {
                   <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
                   <Tooltip />
-                  <Area type="monotone" dataKey="rate" stroke="#10B981" fillOpacity={1} fill="url(#colorRate)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="rate" stroke="#10B981" fillOpacity={1} fill="url(#colorRate)" strokeWidth={3} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -522,16 +519,16 @@ export default function App() {
                     <span className="truncate max-w-[200px]">{kpi.division}</span>
                     <span>{kpi.progress}%</span>
                   </div>
-                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-slate-100/50 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${kpi.progress}%` }}
                       transition={{ duration: 1, delay: idx * 0.05 }}
                       className={cn(
-                        "h-full rounded-full",
-                        kpi.progress > 90 ? "bg-emerald-500" :
-                          kpi.progress > 75 ? "bg-indigo-500" :
-                            "bg-amber-500"
+                        "h-full rounded-full transition-all duration-1000",
+                        kpi.progress > 90 ? "bg-blue-500" :
+                          kpi.progress > 75 ? "bg-orange-500" :
+                            "bg-amber-400"
                       )}
                     />
                   </div>
@@ -543,58 +540,64 @@ export default function App() {
 
 
         {/* Financial & Market Analysis Section */}
-        <div className="bg-orange-50/50 -mx-4 md:-mx-8 px-4 md:px-8 py-12 border-y border-orange-100/50">
-          <div className="max-w-7xl mx-auto space-y-8">
-            <div className="flex items-center gap-3">
-              <TrendingUp className="w-6 h-6 text-orange-600" />
+        <div className="bg-white/30 backdrop-blur-xl -mx-4 md:-mx-8 px-4 md:px-8 py-20 border-y border-white/40">
+          <div className="max-w-7xl mx-auto space-y-12">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-white rounded-2xl shadow-lg">
+                <TrendingUp className="w-8 h-8 text-[#FF7A30]" />
+              </div>
               <div>
-                <h2 className="text-2xl font-extrabold text-slate-900">Financial & Market Analysis</h2>
-                <p className="text-slate-500 text-sm font-medium">Deep dive into profitability, market position, and liquidity</p>
+                <h2 className="text-3xl font-black text-slate-900 tracking-tight">Financial & Market Analysis</h2>
+                <p className="text-slate-500 text-base font-medium">Deep dive into profitability, market position, and liquidity</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <Card title="Net Profit Margin (%)" subtitle="Monthly profitability ratio">
-                <div className="h-[300px] w-full mt-4">
+                <div className="h-[350px] w-full mt-6">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={profitMarginData}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="margin" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 5, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 8 }} />
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                      />
+                      <Line type="monotone" dataKey="margin" stroke="#8B5CF6" strokeWidth={4} dot={{ r: 6, fill: '#8B5CF6', strokeWidth: 3, stroke: '#fff' }} activeDot={{ r: 10 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
               </Card>
 
               <Card title="Cash Flow Analysis" subtitle="Monthly inflow vs outflow">
-                <div className="h-[300px] w-full mt-4">
+                <div className="h-[350px] w-full mt-6">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={cashFlowData}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
-                      <Tooltip />
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                      />
                       <Legend iconType="circle" />
-                      <Bar dataKey="inflow" name="Cash Inflow" fill="#10B981" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="outflow" name="Cash Outflow" fill="#EF4444" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="inflow" name="Cash Inflow" fill="#10B981" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="outflow" name="Cash Outflow" fill="#EF4444" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </Card>
 
-              <Card title="Market Share" subtitle="Current market position vs competitors">
-                <div className="h-[300px] w-full mt-4">
+              <Card title="Market Share" subtitle="Current market position">
+                <div className="h-[350px] w-full mt-6">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={marketShareData}
                         cx="50%"
                         cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
+                        innerRadius={80}
+                        outerRadius={110}
+                        paddingAngle={8}
                         dataKey="value"
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       >
@@ -608,35 +611,39 @@ export default function App() {
                 </div>
               </Card>
 
-              <Card title="Market Expansion by Segmentation" subtitle="Sales performance by market segment (Units)">
-                <div className="h-[300px] w-full mt-4">
+              <Card title="Market Expansion by Segmentation" subtitle="Sales performance by segment (Units)">
+                <div className="h-[350px] w-full mt-6">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={segmentationData} layout="vertical">
                       <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
                       <XAxis type="number" hide />
-                      <YAxis dataKey="segment" type="category" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 10 }} width={120} />
-                      <Tooltip />
-                      <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
+                      <YAxis dataKey="segment" type="category" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11 }} width={120} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                      />
+                      <Bar dataKey="value" fill="#3B82F6" radius={[0, 6, 6, 0]} barSize={24} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </Card>
 
-              <Card title="Accounts Receivable Turnover Ratio" subtitle="Efficiency in collecting receivables" className="lg:col-span-2">
-                <div className="h-[300px] w-full mt-4">
+              <Card title="AR Turnover Ratio" subtitle="Efficiency in collecting receivables" className="lg:col-span-2">
+                <div className="h-[350px] w-full mt-6">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={arTurnoverData}>
                       <defs>
                         <linearGradient id="colorRatio" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1} />
-                          <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
-                      <Tooltip />
-                      <Area type="monotone" dataKey="ratio" stroke="#f59e0b" fillOpacity={1} fill="url(#colorRatio)" strokeWidth={3} />
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                      />
+                      <Area type="monotone" dataKey="ratio" stroke="#F59E0B" fillOpacity={1} fill="url(#colorRatio)" strokeWidth={4} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -1035,17 +1042,17 @@ export default function App() {
 
 function StatCard({ title, value, icon, trend, trendUp }: { title: string, value: string, icon: React.ReactNode, trend: string, trendUp: boolean }) {
   return (
-    <motion.div whileHover={{ y: -4 }} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+    <motion.div whileHover={{ y: -4 }} className="bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-xl shadow-orange-500/5">
       <div className="flex justify-between items-start mb-4">
-        <div className="p-2 bg-slate-50 rounded-lg">{icon}</div>
-        <div className={cn("flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full", trendUp ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600")}>
+        <div className="p-3 bg-orange-50 rounded-2xl">{icon}</div>
+        <div className={cn("flex items-center gap-1 text-[10px] font-bold px-3 py-1 rounded-full", trendUp ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600")}>
           {trendUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
           {trend}
         </div>
       </div>
       <div>
-        <h3 className="text-slate-500 text-sm font-medium">{title}</h3>
-        <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
+        <h3 className="text-slate-400 text-xs font-bold uppercase tracking-wider">{title}</h3>
+        <p className="text-2xl font-black text-slate-900 mt-1 tracking-tight">{value}</p>
       </div>
     </motion.div>
   );
@@ -1053,10 +1060,10 @@ function StatCard({ title, value, icon, trend, trendUp }: { title: string, value
 
 function Card({ children, title, subtitle, className }: { children: React.ReactNode, title: string, subtitle?: string, className?: string }) {
   return (
-    <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className={cn("bg-white p-6 rounded-2xl border border-slate-200 shadow-sm", className)}>
-      <div className="mb-2">
-        <h2 className="text-lg font-bold text-slate-900">{title}</h2>
-        {subtitle && <p className="text-slate-500 text-sm">{subtitle}</p>}
+    <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className={cn("bg-white/90 backdrop-blur-md p-8 rounded-[2rem] border border-white/40 shadow-2xl shadow-orange-900/5", className)}>
+      <div className="mb-6">
+        <h2 className="text-xl font-black text-slate-900 tracking-tight">{title}</h2>
+        {subtitle && <p className="text-slate-400 text-sm font-medium">{subtitle}</p>}
       </div>
       {children}
     </motion.div>
