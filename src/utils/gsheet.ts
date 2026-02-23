@@ -10,6 +10,7 @@ export interface DashboardData {
   revenue: any[];
   kpi: any[];
   budget: any[];
+  pipeline: any[];
   stats: any;
 }
 
@@ -23,7 +24,7 @@ export async function fetchDashboardData(): Promise<DashboardData | null> {
     });
 
     if (!response.ok) throw new Error("Network response was not ok");
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -41,6 +42,7 @@ export function mapGSheetToDashboard(raw: any) {
     kpiData: raw.kpi || [],
     revenueData: raw.revenue || [],
     budgetData: raw.budget || [],
+    pipelineData: raw.pipeline || [],
     stats: raw.stats || {},
     recentInquiries: raw.inquiries || []
   };

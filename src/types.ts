@@ -43,3 +43,19 @@ export interface GrowthRateData {
   period: string;
   rate: number;
 }
+
+export interface ProfitMarginData {
+  month: string;
+  margin: number;
+}
+
+export interface CashFlowData {
+  month: string;
+  inflow: number;
+  outflow: number;
+}
+
+export interface MarketSegmentData {
+  segment: string;
+  value: number;
+}

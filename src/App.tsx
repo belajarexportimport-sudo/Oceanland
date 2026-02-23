@@ -22,7 +22,8 @@ import { twMerge } from 'tailwind-merge';
 import {
   MOCK_KPI_DATA, MOCK_REVENUE_DATA, MOCK_PIPELINE_DATA,
   MOCK_PRODUCT_SALES, MOCK_GROWTH_RATE, SUMMARY_STATS,
-  DIVISIONS, MOCK_BUDGET_DATA
+  DIVISIONS, MOCK_BUDGET_DATA, MOCK_PROFIT_MARGIN_DATA,
+  MOCK_CASHFLOW_DATA, MOCK_MARKET_SHARE_DATA, MOCK_SEGMENTATION_DATA
 } from './constants';
 import { fetchDashboardData, mapGSheetToDashboard } from './utils/gsheet';
 import { parseCSV, parseExcel, mapRevenueData, mapKPIData, mapBudgetData } from './utils/dataUtils';
@@ -47,6 +48,11 @@ export default function App() {
   const [growthRate, setGrowthRate] = useState(MOCK_GROWTH_RATE);
   const [stats, setStats] = useState(SUMMARY_STATS);
   const [recentInquiries, setRecentInquiries] = useState<any[]>([]);
+  const [pipelineData, setPipelineData] = useState(MOCK_PIPELINE_DATA);
+  const [profitMarginData, setProfitMarginData] = useState(MOCK_PROFIT_MARGIN_DATA);
+  const [cashFlowData, setCashFlowData] = useState(MOCK_CASHFLOW_DATA);
+  const [marketShareData, setMarketShareData] = useState(MOCK_MARKET_SHARE_DATA);
+  const [segmentationData, setSegmentationData] = useState(MOCK_SEGMENTATION_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string>('');
 
@@ -63,6 +69,11 @@ export default function App() {
         if (parsed.growthRate) setGrowthRate(parsed.growthRate);
         if (parsed.stats) setStats(parsed.stats);
         if (parsed.recentInquiries) setRecentInquiries(parsed.recentInquiries);
+        if (parsed.pipelineData) setPipelineData(parsed.pipelineData);
+        if (parsed.profitMarginData) setProfitMarginData(parsed.profitMarginData);
+        if (parsed.cashFlowData) setCashFlowData(parsed.cashFlowData);
+        if (parsed.marketShareData) setMarketShareData(parsed.marketShareData);
+        if (parsed.segmentationData) setSegmentationData(parsed.segmentationData);
       } catch (e) {
         console.error("Failed to load dashboard data", e);
       }
@@ -76,6 +87,7 @@ export default function App() {
         if (mapped.kpiData.length) setKpiData(mapped.kpiData);
         if (mapped.revenueData.length) setRevenueData(mapped.revenueData);
         if (mapped.budgetData.length) setBudgetData(mapped.budgetData);
+        if (mapped.pipelineData.length) setPipelineData(mapped.pipelineData);
         if (Object.keys(mapped.stats).length) setStats(mapped.stats);
         if (mapped.recentInquiries.length) setRecentInquiries(mapped.recentInquiries);
         setLastUpdated(new Date().toLocaleTimeString());
@@ -87,7 +99,11 @@ export default function App() {
   }, []);
 
   const saveToDisk = () => {
-    const data = { kpiData, revenueData, budgetData, productSales, growthRate, stats, recentInquiries };
+    const data = {
+      kpiData, revenueData, budgetData, productSales,
+      growthRate, stats, recentInquiries, pipelineData,
+      profitMarginData, cashFlowData, marketShareData, segmentationData
+    };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
 
@@ -125,6 +141,36 @@ export default function App() {
     setGrowthRate(newData);
   };
 
+  const handlePipelineChange = (index: number, field: 'value' | 'count', value: number) => {
+    const newData = [...pipelineData];
+    newData[index] = { ...newData[index], [field]: value };
+    setPipelineData(newData);
+  };
+
+  const handleProfitMarginChange = (index: number, margin: number) => {
+    const newData = [...profitMarginData];
+    newData[index] = { ...newData[index], margin };
+    setProfitMarginData(newData);
+  };
+
+  const handleCashFlowChange = (index: number, field: 'inflow' | 'outflow', value: number) => {
+    const newData = [...cashFlowData];
+    newData[index] = { ...newData[index], [field]: value };
+    setCashFlowData(newData);
+  };
+
+  const handleMarketShareChange = (index: number, value: number) => {
+    const newData = [...marketShareData];
+    newData[index] = { ...newData[index], value };
+    setMarketShareData(newData);
+  };
+
+  const handleSegmentationChange = (index: number, value: number) => {
+    const newData = [...segmentationData];
+    newData[index] = { ...newData[index], value };
+    setSegmentationData(newData);
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'revenue' | 'kpi' | 'budget' | 'all') => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -140,7 +186,7 @@ export default function App() {
         if (type === 'all' || sheetNames.length > 1) {
           // Smart matching based on sheet names
           let importedCount = 0;
-          sheetNames.forEach(name => {
+          for (const name of sheetNames) {
             const lowerName = name.toLowerCase();
             const rows = sheets[name];
             if (lowerName.includes('revenue') || lowerName.includes('monthly')) {
@@ -152,8 +198,12 @@ export default function App() {
             } else if (lowerName.includes('budget') || lowerName.includes('anggaran')) {
               setBudgetData(mapBudgetData(rows));
               importedCount++;
+            } else if (lowerName.includes('pipeline') || lowerName.includes('prospek')) {
+              const { mapPipelineData } = await import('./utils/dataUtils');
+              setPipelineData(mapPipelineData(rows));
+              importedCount++;
             }
-          });
+          }
 
           if (importedCount > 0) {
             alert(`Smart Import: Successfully imported ${importedCount} sheets!`);
@@ -177,13 +227,17 @@ export default function App() {
       }
     } else {
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = async (event) => {
         const content = event.target?.result as string;
         const { rows } = parseCSV(content);
 
         if (type === 'revenue' || type === 'all') setRevenueData(mapRevenueData(rows));
         if (type === 'kpi' || type === 'all') setKpiData(mapKPIData(rows));
         if (type === 'budget' || type === 'all') setBudgetData(mapBudgetData(rows));
+        if (type === 'all') {
+          const { mapPipelineData } = await import('./utils/dataUtils');
+          setPipelineData(mapPipelineData(rows));
+        }
 
         alert(`Successfully imported ${rows.length} rows!`);
       };
@@ -440,6 +494,27 @@ export default function App() {
             </div>
           </Card>
 
+          <Card title="Sales Pipeline" subtitle="Conversion stages and deal volume">
+            <div className="h-[300px] w-full mt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <FunnelChart>
+                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                  <Funnel
+                    data={pipelineData}
+                    dataKey="value"
+                    nameKey="stage"
+                    labelLine={true}
+                  >
+                    <LabelList position="right" fill="#64748B" dataKey="stage" stroke="none" fontWeight="bold" />
+                    {pipelineData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Funnel>
+                </FunnelChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+
           <Card title="Product Sales Distribution" subtitle="Revenue share by product category">
             <div className="h-[300px] w-full mt-4">
               <ResponsiveContainer width="100%" height="100%">
@@ -530,6 +605,89 @@ export default function App() {
             </table>
           </div>
         </Card>
+
+        {/* Financial & Market Analysis Section */}
+        <div className="bg-orange-50/50 -mx-4 md:-mx-8 px-4 md:px-8 py-12 border-y border-orange-100/50">
+          <div className="max-w-7xl mx-auto space-y-8">
+            <div className="flex items-center gap-3">
+              <TrendingUp className="w-6 h-6 text-orange-600" />
+              <div>
+                <h2 className="text-2xl font-extrabold text-slate-900">Financial & Market Analysis</h2>
+                <p className="text-slate-500 text-sm font-medium">Deep dive into profitability, market position, and liquidity</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <Card title="Net Profit Margin (%)" subtitle="Monthly profitability ratio">
+                <div className="h-[300px] w-full mt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={profitMarginData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="margin" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 5, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 8 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+
+              <Card title="Cash Flow Analysis" subtitle="Monthly inflow vs outflow">
+                <div className="h-[300px] w-full mt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={cashFlowData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
+                      <Tooltip />
+                      <Legend iconType="circle" />
+                      <Bar dataKey="inflow" name="Cash Inflow" fill="#10B981" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="outflow" name="Cash Outflow" fill="#EF4444" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+
+              <Card title="Market Share" subtitle="Current market position vs competitors">
+                <div className="h-[300px] w-full mt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={marketShareData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {marketShareData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+
+              <Card title="Market Expansion by Segmentation" subtitle="Sales performance by market segment (Units)">
+                <div className="h-[300px] w-full mt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={segmentationData} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
+                      <XAxis type="number" hide />
+                      <YAxis dataKey="segment" type="category" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 10 }} width={120} />
+                      <Tooltip />
+                      <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
 
         {/* Expense Trend */}
         <Card title="Expense Trend" subtitle="Monthly operational costs vs revenue">
@@ -788,6 +946,95 @@ export default function App() {
                       <div key={idx} className="space-y-1">
                         <label className="text-xs font-medium text-slate-500">{q.period}</label>
                         <input type="number" step="0.1" value={q.rate} onChange={(e) => handleGrowthChange(idx, parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section>
+                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <Target className="w-4 h-4" />
+                    Sales Pipeline
+                  </h3>
+                  <div className="space-y-4">
+                    {pipelineData.map((stage, idx) => (
+                      <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 grid grid-cols-2 gap-3 items-end">
+                        <div className="col-span-1">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase">{stage.stage}</label>
+                          <div className="text-[10px] text-slate-400">Value (Rp)</div>
+                          <input type="number" value={stage.value} onChange={(e) => handlePipelineChange(idx, 'value', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                        </div>
+                        <div className="col-span-1">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase">Count</label>
+                          <input type="number" value={stage.count} onChange={(e) => handlePipelineChange(idx, 'count', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section>
+                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4" />
+                    Net Profit Margin (%)
+                  </h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    {profitMarginData.map((data, idx) => (
+                      <div key={idx} className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase">{data.month}</label>
+                        <input type="number" step="0.1" value={data.margin} onChange={(e) => handleProfitMarginChange(idx, parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs" />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section>
+                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    Cash Flow Analysis
+                  </h3>
+                  <div className="space-y-4">
+                    {cashFlowData.map((data, idx) => (
+                      <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 grid grid-cols-3 gap-2 items-end">
+                        <div className="col-span-1 text-xs font-bold text-slate-700">{data.month}</div>
+                        <div className="col-span-1">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase">Inflow</label>
+                          <input type="number" value={data.inflow} onChange={(e) => handleCashFlowChange(idx, 'inflow', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                        </div>
+                        <div className="col-span-1">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase">Outflow</label>
+                          <input type="number" value={data.outflow} onChange={(e) => handleCashFlowChange(idx, 'outflow', parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section>
+                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    Market Share (%)
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {marketShareData.map((item, idx) => (
+                      <div key={idx} className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase">{item.name}</label>
+                        <input type="number" value={item.value} onChange={(e) => handleMarketShareChange(idx, parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs" />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section>
+                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <Monitor className="w-4 h-4" />
+                    Market Segmentation
+                  </h3>
+                  <div className="space-y-3">
+                    {segmentationData.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-4">
+                        <span className="text-xs font-medium text-slate-600 w-32 truncate">{item.segment}</span>
+                        <input type="number" value={item.value} onChange={(e) => handleSegmentationChange(idx, parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs flex-1" />
                       </div>
                     ))}
                   </div>

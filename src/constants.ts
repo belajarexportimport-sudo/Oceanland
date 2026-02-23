@@ -1,5 +1,5 @@
 
-import { KPIData, RevenueData, PipelineData, ProductSalesData, GrowthRateData, Division } from './types';
+import { KPIData, RevenueData, PipelineData, ProductSalesData, GrowthRateData, Division, ProfitMarginData, CashFlowData, MarketSegmentData } from './types';
 
 export const DIVISIONS: Division[] = [
   'Sales',
@@ -102,3 +102,37 @@ export const SUMMARY_STATS = {
   bestDivision: "Sales",
   bestAttendance: "Siti Aminah",
 };
+
+export const MOCK_PROFIT_MARGIN_DATA: ProfitMarginData[] = [
+  { month: 'Jan', margin: 12.5 },
+  { month: 'Feb', margin: 13.4 },
+  { month: 'Mar', margin: 12.8 },
+  { month: 'Apr', margin: 14.7 },
+  { month: 'May', margin: 15.2 },
+  { month: 'Jun', margin: 14.9 },
+];
+
+export const MOCK_CASHFLOW_DATA: CashFlowData[] = [
+  { month: 'Jan', inflow: 5000, outflow: 4200 },
+  { month: 'Feb', inflow: 5500, outflow: 4500 },
+  { month: 'Mar', inflow: 4800, outflow: 4100 },
+  { month: 'Apr', inflow: 6200, outflow: 5100 },
+  { month: 'May', inflow: 5900, outflow: 4800 },
+  { month: 'Jun', inflow: 6500, outflow: 5400 },
+];
+
+export const MOCK_MARKET_SHARE_DATA = [
+  { name: 'Oseanland', value: 35 },
+  { name: 'Competitor A', value: 25 },
+  { name: 'Competitor B', value: 20 },
+  { name: 'Competitor C', value: 15 },
+  { name: 'Others', value: 5 },
+];
+
+export const MOCK_SEGMENTATION_DATA: MarketSegmentData[] = [
+  { segment: 'Government', value: 850 },
+  { segment: 'Mining', value: 620 },
+  { segment: 'Construction', value: 540 },
+  { segment: 'Oil & Gas', value: 320 },
+  { segment: 'Research & Education', value: 150 },
+];
