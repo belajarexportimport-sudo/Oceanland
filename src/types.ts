@@ -59,3 +59,8 @@ export interface MarketSegmentData {
   segment: string;
   value: number;
 }
+
+export interface ARTurnoverData {
+  month: string;
+  ratio: number;
+}

@@ -1,5 +1,5 @@
 
-import { KPIData, RevenueData, PipelineData, ProductSalesData, GrowthRateData, Division, ProfitMarginData, CashFlowData, MarketSegmentData } from './types';
+import { KPIData, RevenueData, PipelineData, ProductSalesData, GrowthRateData, Division, ProfitMarginData, CashFlowData, MarketSegmentData, ARTurnoverData } from './types';
 
 export const DIVISIONS: Division[] = [
   'Sales',
@@ -135,4 +135,13 @@ export const MOCK_SEGMENTATION_DATA: MarketSegmentData[] = [
   { segment: 'Construction', value: 540 },
   { segment: 'Oil & Gas', value: 320 },
   { segment: 'Research & Education', value: 150 },
+];
+
+export const MOCK_AR_TURNOVER_DATA: ARTurnoverData[] = [
+  { month: 'Jan', ratio: 5.2 },
+  { month: 'Feb', ratio: 5.4 },
+  { month: 'Mar', ratio: 5.6 },
+  { month: 'Apr', ratio: 5.3 },
+  { month: 'May', ratio: 5.8 },
+  { month: 'Jun', ratio: 6.2 },
 ];

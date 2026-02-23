@@ -11,6 +11,7 @@ export interface DashboardData {
   kpi: any[];
   budget: any[];
   pipeline: any[];
+  ar_turnover: any[];
   stats: any;
 }
 
@@ -43,6 +44,7 @@ export function mapGSheetToDashboard(raw: any) {
     revenueData: raw.revenue || [],
     budgetData: raw.budget || [],
     pipelineData: raw.pipeline || [],
+    arTurnoverData: raw.ar_turnover || [],
     stats: raw.stats || {},
     recentInquiries: raw.inquiries || []
   };

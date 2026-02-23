@@ -25,12 +25,12 @@ export const parseExcel = (file: File): Promise<{ [sheetName: string]: any[] }> 
                 const data = new Uint8Array(e.target?.result as ArrayBuffer);
                 const workbook = XLSX.read(data, { type: 'array' });
                 const result: { [sheetName: string]: any[] } = {};
-                
+
                 workbook.SheetNames.forEach(sheetName => {
                     const worksheet = workbook.Sheets[sheetName];
                     result[sheetName] = XLSX.utils.sheet_to_json(worksheet);
                 });
-                
+
                 resolve(result);
             } catch (err) {
                 reject(err);
@@ -72,5 +72,12 @@ export const mapPipelineData = (rows: any[]) => {
         stage: row.stage || row.Stage || 'Unknown',
         value: parseInt(row.value || row.Value) || 0,
         count: parseInt(row.count || row.Count) || 0
+    }));
+};
+
+export const mapArTurnoverData = (rows: any[]) => {
+    return rows.map(row => ({
+        month: row.month || row.Month || 'Jan',
+        ratio: parseFloat(row.ratio || row.Ratio) || 0
     }));
 };

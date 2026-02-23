@@ -23,7 +23,8 @@ import {
   MOCK_KPI_DATA, MOCK_REVENUE_DATA, MOCK_PIPELINE_DATA,
   MOCK_PRODUCT_SALES, MOCK_GROWTH_RATE, SUMMARY_STATS,
   DIVISIONS, MOCK_BUDGET_DATA, MOCK_PROFIT_MARGIN_DATA,
-  MOCK_CASHFLOW_DATA, MOCK_MARKET_SHARE_DATA, MOCK_SEGMENTATION_DATA
+  MOCK_CASHFLOW_DATA, MOCK_MARKET_SHARE_DATA, MOCK_SEGMENTATION_DATA,
+  MOCK_AR_TURNOVER_DATA
 } from './constants';
 import { fetchDashboardData, mapGSheetToDashboard } from './utils/gsheet';
 import { parseCSV, parseExcel, mapRevenueData, mapKPIData, mapBudgetData } from './utils/dataUtils';
@@ -53,6 +54,7 @@ export default function App() {
   const [cashFlowData, setCashFlowData] = useState(MOCK_CASHFLOW_DATA);
   const [marketShareData, setMarketShareData] = useState(MOCK_MARKET_SHARE_DATA);
   const [segmentationData, setSegmentationData] = useState(MOCK_SEGMENTATION_DATA);
+  const [arTurnoverData, setArTurnoverData] = useState(MOCK_AR_TURNOVER_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string>('');
 
@@ -74,6 +76,7 @@ export default function App() {
         if (parsed.cashFlowData) setCashFlowData(parsed.cashFlowData);
         if (parsed.marketShareData) setMarketShareData(parsed.marketShareData);
         if (parsed.segmentationData) setSegmentationData(parsed.segmentationData);
+        if (parsed.arTurnoverData) setArTurnoverData(parsed.arTurnoverData);
       } catch (e) {
         console.error("Failed to load dashboard data", e);
       }
@@ -102,7 +105,8 @@ export default function App() {
     const data = {
       kpiData, revenueData, budgetData, productSales,
       growthRate, stats, recentInquiries, pipelineData,
-      profitMarginData, cashFlowData, marketShareData, segmentationData
+      profitMarginData, cashFlowData, marketShareData, segmentationData,
+      arTurnoverData
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
@@ -171,6 +175,12 @@ export default function App() {
     setSegmentationData(newData);
   };
 
+  const handleArTurnoverChange = (index: number, ratio: number) => {
+    const newData = [...arTurnoverData];
+    newData[index] = { ...newData[index], ratio };
+    setArTurnoverData(newData);
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'revenue' | 'kpi' | 'budget' | 'all') => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -201,6 +211,10 @@ export default function App() {
             } else if (lowerName.includes('pipeline') || lowerName.includes('prospek')) {
               const { mapPipelineData } = await import('./utils/dataUtils');
               setPipelineData(mapPipelineData(rows));
+              importedCount++;
+            } else if (lowerName.includes('turnover') || lowerName.includes('ar turnover')) {
+              const { mapArTurnoverData } = await import('./utils/dataUtils');
+              setArTurnoverData(mapArTurnoverData(rows));
               importedCount++;
             }
           }
@@ -685,6 +699,26 @@ export default function App() {
                   </ResponsiveContainer>
                 </div>
               </Card>
+
+              <Card title="Accounts Receivable Turnover Ratio" subtitle="Efficiency in collecting receivables" className="lg:col-span-2">
+                <div className="h-[300px] w-full mt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={arTurnoverData}>
+                      <defs>
+                        <linearGradient id="colorRatio" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1} />
+                          <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
+                      <Tooltip />
+                      <Area type="monotone" dataKey="ratio" stroke="#f59e0b" fillOpacity={1} fill="url(#colorRatio)" strokeWidth={3} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
             </div>
           </div>
         </div>
@@ -1035,6 +1069,21 @@ export default function App() {
                       <div key={idx} className="flex items-center gap-4">
                         <span className="text-xs font-medium text-slate-600 w-32 truncate">{item.segment}</span>
                         <input type="number" value={item.value} onChange={(e) => handleSegmentationChange(idx, parseInt(e.target.value) || 0)} className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs flex-1" />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section>
+                  <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4" />
+                    AR Turnover Ratio
+                  </h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    {arTurnoverData.map((data, idx) => (
+                      <div key={idx} className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase">{data.month}</label>
+                        <input type="number" step="0.1" value={data.ratio} onChange={(e) => handleArTurnoverChange(idx, parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs" />
                       </div>
                     ))}
                   </div>
