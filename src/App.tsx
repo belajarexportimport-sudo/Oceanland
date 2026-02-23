@@ -24,6 +24,7 @@ import {
   MOCK_PRODUCT_SALES, MOCK_GROWTH_RATE, SUMMARY_STATS,
   DIVISIONS, MOCK_BUDGET_DATA
 } from './constants';
+import { fetchDashboardData, mapGSheetToDashboard } from './utils/gsheet';
 import { parseCSV, parseExcel, mapRevenueData, mapKPIData, mapBudgetData } from './utils/dataUtils';
 
 function cn(...inputs: ClassValue[]) {
@@ -45,8 +46,11 @@ export default function App() {
   const [productSales, setProductSales] = useState(MOCK_PRODUCT_SALES);
   const [growthRate, setGrowthRate] = useState(MOCK_GROWTH_RATE);
   const [stats, setStats] = useState(SUMMARY_STATS);
+  const [recentInquiries, setRecentInquiries] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
 
-  // Persistence Logic
+  // Persistence & Data Fetching Logic
   React.useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -58,14 +62,32 @@ export default function App() {
         if (parsed.productSales) setProductSales(parsed.productSales);
         if (parsed.growthRate) setGrowthRate(parsed.growthRate);
         if (parsed.stats) setStats(parsed.stats);
+        if (parsed.recentInquiries) setRecentInquiries(parsed.recentInquiries);
       } catch (e) {
         console.error("Failed to load dashboard data", e);
       }
     }
+
+    const loadLiveData = async () => {
+      setIsLoading(true);
+      const liveData = await fetchDashboardData();
+      if (liveData) {
+        const mapped = mapGSheetToDashboard(liveData);
+        if (mapped.kpiData.length) setKpiData(mapped.kpiData);
+        if (mapped.revenueData.length) setRevenueData(mapped.revenueData);
+        if (mapped.budgetData.length) setBudgetData(mapped.budgetData);
+        if (Object.keys(mapped.stats).length) setStats(mapped.stats);
+        if (mapped.recentInquiries.length) setRecentInquiries(mapped.recentInquiries);
+        setLastUpdated(new Date().toLocaleTimeString());
+      }
+      setIsLoading(false);
+    };
+
+    loadLiveData();
   }, []);
 
   const saveToDisk = () => {
-    const data = { kpiData, revenueData, budgetData, productSales, growthRate, stats };
+    const data = { kpiData, revenueData, budgetData, productSales, growthRate, stats, recentInquiries };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
 
@@ -179,73 +201,98 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans p-4 md:p-8 relative overflow-x-hidden">
-      {/* Header */}
-      <header className="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <motion.h1
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3"
-          >
-            <img
-              src="/assets/logo.png"
-              alt="Logo"
-              className="h-12 w-auto object-contain"
-              onError={(e) => {
-                // Fallback in case image fails to load during dev
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-            Executive Summary Dashboard
-          </motion.h1>
-          <div className="flex items-center gap-2 mt-1">
-            <Building2 className="w-4 h-4 text-indigo-600" />
-            <span className="text-sm font-bold text-slate-700">PT Oseanland Indonesia Group</span>
-            <span className="text-slate-300">|</span>
-            <p className="text-slate-500 text-sm">Performance overview and strategic insights</p>
+    <div className="min-h-screen bg-[#FDFCFB] text-slate-900 font-sans relative overflow-x-hidden">
+      {/* Premium Orange Header */}
+      <div className="bg-[#FF7A30] pb-32 pt-8 px-4 md:px-8 shadow-inner">
+        <header className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-5">
+            <div className="p-2 bg-white rounded-2xl shadow-xl border border-white/20 flex items-center justify-center">
+              <img
+                src="/assets/logo.png"
+                alt="Logo"
+                className="h-16 w-auto object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+            <div>
+              <motion.h1
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="text-4xl font-extrabold tracking-tighter text-white drop-shadow-md"
+              >
+                Executive Summary Dashboard
+              </motion.h1>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-base font-bold text-orange-50/95">PT Oseanland Indonesia Group</span>
+                <span className="text-white/40 text-sm">|</span>
+                <p className="text-white/80 text-sm font-medium tracking-wide">Performance overview and strategic insights</p>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-              className="appearance-none bg-white border border-slate-200 rounded-lg px-4 py-2 pr-10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative group">
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="appearance-none bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl px-5 py-2.5 pr-12 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm cursor-pointer transition-all"
+              >
+                <option className="text-slate-900">2023</option>
+                <option className="text-slate-900">2024</option>
+                <option className="text-slate-900">2025</option>
+                <option className="text-slate-900">2026</option>
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70 pointer-events-none group-hover:text-white transition-colors" />
+            </div>
+
+            <div className="relative group">
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="appearance-none bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl px-5 py-2.5 pr-12 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm cursor-pointer transition-all"
+              >
+                <option className="text-slate-900">All Months</option>
+                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
+                  <option key={m} className="text-slate-900">{m}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70 pointer-events-none group-hover:text-white transition-colors" />
+            </div>
+
+            <button
+              onClick={() => setShowEditPanel(true)}
+              className="bg-white/10 hover:bg-white border border-white/20 hover:text-orange-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold backdrop-blur-sm transition-all flex items-center gap-2 shadow-lg"
             >
-              <option>2023</option>
-              <option>2024</option>
-              <option>2025</option>
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <Settings className="w-4 h-4" />
+              Manage Data
+            </button>
+
+            <button
+              onClick={() => {
+                setRevenueData(MOCK_REVENUE_DATA.filter(d => d.year === selectedYear));
+                alert(`Dashboard updated for ${selectedMonth} ${selectedYear}`);
+              }}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-xl hover:scale-105 active:scale-95"
+            >
+              <Filter className="w-4 h-4" />
+              Apply Filters
+            </button>
           </div>
+        </header>
 
-          <button
-            onClick={() => setShowEditPanel(true)}
-            className="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm"
-          >
-            <Settings className="w-4 h-4" />
-            Manage Data
-          </button>
+        {lastUpdated && (
+          <div className="max-w-7xl mx-auto mt-4">
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md text-white/90 text-[11px] font-bold rounded-full border border-white/20">
+              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+              Live Data Source Linked • Last Sync: {lastUpdated}
+            </span>
+          </div>
+        )}
+      </div>
 
-          <button
-            onClick={() => {
-              // Logic to filter data based on selectedYear
-              setRevenueData(MOCK_REVENUE_DATA.filter(d => d.year === selectedYear));
-              // Note: KPI and other mock data aren't year-specific yet in MOCK_KPI_DATA 
-              // but we can simulate changes or filter if they were.
-              alert(`Dashboard updated for year ${selectedYear}`);
-            }}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-sm"
-          >
-            <Filter className="w-4 h-4" />
-            Apply Filters
-          </button>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto space-y-6">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 -mt-20 space-y-8 pb-16">
         {/* Summary Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
           <StatCard
@@ -256,16 +303,9 @@ export default function App() {
             trendUp={true}
           />
           <StatCard
-            title="Total Expense"
-            value={formatCurrency(stats.totalExpense)}
-            icon={<DollarSign className="w-5 h-5 text-red-600" />}
-            trend="-2.4%"
-            trendUp={false}
-          />
-          <StatCard
             title="Total Profit"
             value={formatCurrency(stats.totalProfit)}
-            icon={<DollarSign className="w-5 h-5 text-emerald-600" />}
+            icon={<span className="font-bold text-emerald-600 text-lg">Rp</span>}
             trend="+15.2%"
             trendUp={true}
           />
@@ -450,6 +490,46 @@ export default function App() {
             </div>
           </Card>
         </div>
+
+        {/* Recent Inquiries with Weight and Dimension */}
+        <Card title="Recent Enquiries Detail" subtitle="Tracking latest shipments including weight and dimensions">
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-slate-500 font-semibold">
+                <tr>
+                  <th className="px-4 py-3 rounded-l-lg text-xs uppercase tracking-wider">Customer</th>
+                  <th className="px-4 py-3 text-xs uppercase tracking-wider">Origin</th>
+                  <th className="px-4 py-3 text-xs uppercase tracking-wider">Destination</th>
+                  <th className="px-4 py-3 text-xs uppercase tracking-wider font-bold text-indigo-600">Weight (GW)</th>
+                  <th className="px-4 py-3 text-xs uppercase tracking-wider font-bold text-indigo-600">Dimension</th>
+                  <th className="px-4 py-3 rounded-r-lg text-xs uppercase tracking-wider">Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {recentInquiries.length > 0 ? recentInquiries.map((iq, idx) => (
+                  <motion.tr
+                    key={idx}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="hover:bg-slate-50 transition-colors"
+                  >
+                    <td className="px-4 py-4 font-medium text-slate-900">{iq.customer_name || "-"}</td>
+                    <td className="px-4 py-4 text-slate-600">{iq.origin || "-"}</td>
+                    <td className="px-4 py-4 text-slate-600">{iq.destination || "-"}</td>
+                    <td className="px-4 py-4 font-bold text-slate-900 bg-indigo-50/30">{iq.weight || "-"}</td>
+                    <td className="px-4 py-4 font-bold text-slate-900 bg-indigo-50/30">{iq.dimension || "-"}</td>
+                    <td className="px-4 py-4 text-slate-500 text-xs">{iq.timestamp ? new Date(iq.timestamp).toLocaleDateString() : "-"}</td>
+                  </motion.tr>
+                )) : (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-10 text-center text-slate-400 italic">No recent enquiries found</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
 
         {/* Expense Trend */}
         <Card title="Expense Trend" subtitle="Monthly operational costs vs revenue">
@@ -743,7 +823,7 @@ export default function App() {
       </AnimatePresence>
 
       <footer className="max-w-7xl mx-auto mt-12 pt-8 border-t border-slate-200 text-center text-slate-400 text-sm">
-        <p>(c) 2024 Executive Dashboard. All rights reserved.</p>
+        <p>(c) 2024 PT Oseanland Indonesia Group. All rights reserved.</p>
       </footer>
 
       <style>{`
