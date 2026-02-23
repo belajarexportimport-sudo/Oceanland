@@ -1,6 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
+ * Clean Version - Recent Enquiries Detail Section Removed
  */
 
 import React, { useState } from 'react';
@@ -48,7 +49,6 @@ export default function App() {
   const [productSales, setProductSales] = useState(MOCK_PRODUCT_SALES);
   const [growthRate, setGrowthRate] = useState(MOCK_GROWTH_RATE);
   const [stats, setStats] = useState(SUMMARY_STATS);
-  const [recentInquiries, setRecentInquiries] = useState<any[]>([]);
   const [profitMarginData, setProfitMarginData] = useState(MOCK_PROFIT_MARGIN_DATA);
   const [cashFlowData, setCashFlowData] = useState(MOCK_CASHFLOW_DATA);
   const [marketShareData, setMarketShareData] = useState(MOCK_MARKET_SHARE_DATA);
@@ -69,7 +69,6 @@ export default function App() {
         if (parsed.productSales) setProductSales(parsed.productSales);
         if (parsed.growthRate) setGrowthRate(parsed.growthRate);
         if (parsed.stats) setStats(parsed.stats);
-        if (parsed.recentInquiries) setRecentInquiries(parsed.recentInquiries);
         if (parsed.profitMarginData) setProfitMarginData(parsed.profitMarginData);
         if (parsed.cashFlowData) setCashFlowData(parsed.cashFlowData);
         if (parsed.marketShareData) setMarketShareData(parsed.marketShareData);
@@ -89,7 +88,6 @@ export default function App() {
         if (mapped.revenueData.length) setRevenueData(mapped.revenueData);
         if (mapped.budgetData.length) setBudgetData(mapped.budgetData);
         if (Object.keys(mapped.stats).length) setStats(mapped.stats);
-        if (mapped.recentInquiries.length) setRecentInquiries(mapped.recentInquiries);
         setLastUpdated(new Date().toLocaleTimeString());
       }
       setIsLoading(false);
@@ -101,7 +99,7 @@ export default function App() {
   const saveToDisk = () => {
     const data = {
       kpiData, revenueData, budgetData, productSales,
-      growthRate, stats, recentInquiries,
+      growthRate, stats,
       profitMarginData, cashFlowData, marketShareData, segmentationData,
       arTurnoverData
     };
@@ -543,45 +541,6 @@ export default function App() {
           </Card>
         </div>
 
-        {/* Recent Inquiries with Weight and Dimension */}
-        <Card title="Recent Enquiries Detail" subtitle="Tracking latest shipments including weight and dimensions">
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500 font-semibold">
-                <tr>
-                  <th className="px-4 py-3 rounded-l-lg text-xs uppercase tracking-wider">Customer</th>
-                  <th className="px-4 py-3 text-xs uppercase tracking-wider">Origin</th>
-                  <th className="px-4 py-3 text-xs uppercase tracking-wider">Destination</th>
-                  <th className="px-4 py-3 text-xs uppercase tracking-wider font-bold text-indigo-600">Weight (GW)</th>
-                  <th className="px-4 py-3 text-xs uppercase tracking-wider font-bold text-indigo-600">Dimension</th>
-                  <th className="px-4 py-3 rounded-r-lg text-xs uppercase tracking-wider">Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {recentInquiries.length > 0 ? recentInquiries.map((iq, idx) => (
-                  <motion.tr
-                    key={idx}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="hover:bg-slate-50 transition-colors"
-                  >
-                    <td className="px-4 py-4 font-medium text-slate-900">{iq.customer_name || "-"}</td>
-                    <td className="px-4 py-4 text-slate-600">{iq.origin || "-"}</td>
-                    <td className="px-4 py-4 text-slate-600">{iq.destination || "-"}</td>
-                    <td className="px-4 py-4 font-bold text-slate-900 bg-indigo-50/30">{iq.weight || "-"}</td>
-                    <td className="px-4 py-4 font-bold text-slate-900 bg-indigo-50/30">{iq.dimension || "-"}</td>
-                    <td className="px-4 py-4 text-slate-500 text-xs">{iq.timestamp ? new Date(iq.timestamp).toLocaleDateString() : "-"}</td>
-                  </motion.tr>
-                )) : (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-10 text-center text-slate-400 italic">No recent enquiries found</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
 
         {/* Financial & Market Analysis Section */}
         <div className="bg-orange-50/50 -mx-4 md:-mx-8 px-4 md:px-8 py-12 border-y border-orange-100/50">

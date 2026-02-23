@@ -6,11 +6,9 @@
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzBkPrPYwpel3Q2Y4qW6o0EFPRCxAPZ4kSufta8Hc-G8lj_59XR9A-KiRmI8agH_NqXyA/exec';
 
 export interface DashboardData {
-  inquiries: any[];
   revenue: any[];
   kpi: any[];
   budget: any[];
-  pipeline: any[];
   ar_turnover: any[];
   stats: any;
 }
@@ -43,9 +41,7 @@ export function mapGSheetToDashboard(raw: any) {
     kpiData: raw.kpi || [],
     revenueData: raw.revenue || [],
     budgetData: raw.budget || [],
-    pipelineData: raw.pipeline || [],
     arTurnoverData: raw.ar_turnover || [],
-    stats: raw.stats || {},
-    recentInquiries: raw.inquiries || []
+    stats: raw.stats || {}
   };
 }
