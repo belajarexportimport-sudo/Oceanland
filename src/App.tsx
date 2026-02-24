@@ -58,6 +58,29 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string>('');
 
+  interface CustomKpi {
+    id: string;
+    title: string;
+    value: string;
+    trend: string;
+    trendUp: boolean;
+    iconType: string;
+  }
+
+  // Dashboard Customization State
+  const [visibleCharts, setVisibleCharts] = useState<{ [key: string]: boolean }>({
+    expenseTrend: true,
+    profitMargin: true,
+    cashFlow: true,
+    marketShare: true,
+    segmentation: true,
+    arTurnover: true,
+    productSales: true,
+    kpiProgress: true
+  });
+
+  const [customKpis, setCustomKpis] = useState<CustomKpi[]>([]);
+
   // Persistence & Data Fetching Logic
   React.useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -75,6 +98,8 @@ export default function App() {
         if (p.allMarketShareData) setAllMarketShareData(p.allMarketShareData);
         if (p.allSegmentationData) setAllSegmentationData(p.allSegmentationData);
         if (p.allArTurnoverData) setAllArTurnoverData(p.allArTurnoverData);
+        if (p.visibleCharts) setVisibleCharts(p.visibleCharts);
+        if (p.customKpis) setCustomKpis(p.customKpis);
       } catch (e) {
         console.error("Failed to load dashboard data", e);
       }
@@ -148,7 +173,8 @@ export default function App() {
       allKpiData, allRevenueData, allBudgetData, allProductSales,
       allGrowthRate, allStats,
       allProfitMarginData, allCashFlowData, allMarketShareData, allSegmentationData,
-      allArTurnoverData
+      allArTurnoverData,
+      visibleCharts, customKpis
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
@@ -228,6 +254,33 @@ export default function App() {
     setAllArTurnoverData(prev => prev.map(item =>
       item === targetItem ? { ...item, ratio } : item
     ));
+  };
+
+  const handleToggleChart = (key: string) => {
+    setVisibleCharts(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const handleAddCustomKpi = () => {
+    const newKpi: CustomKpi = {
+      id: Date.now().toString(),
+      title: 'New KPI',
+      value: '0',
+      trend: '+0%',
+      trendUp: true,
+      iconType: 'DollarSign'
+    };
+    setCustomKpis(prev => [...prev, newKpi]);
+  };
+
+  const handleUpdateCustomKpi = (id: string, field: string, value: any) => {
+    setCustomKpis(prev => prev.map(k => k.id === id ? { ...k, [field]: value } : k));
+  };
+
+  const handleDeleteCustomKpi = (id: string) => {
+    setCustomKpis(prev => prev.filter(k => k.id !== id));
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'revenue' | 'kpi' | 'budget' | 'all') => {
@@ -338,6 +391,14 @@ export default function App() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
+  };
+
+  const getIcon = (iconName: string) => {
+    const icons: { [key: string]: any } = {
+      DollarSign, Users, TrendingUp, Target, Box, Award, Monitor, Briefcase
+    };
+    const Icon = icons[iconName] || DollarSign;
+    return <Icon className="w-5 h-5 text-indigo-600" />;
   };
 
   return (
@@ -465,6 +526,23 @@ export default function App() {
           />
         </div>
 
+        {/* Custom User KPI Cards */}
+        {customKpis.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {customKpis.map((kpi) => (
+              <div key={kpi.id}>
+                <StatCard
+                  title={kpi.title}
+                  value={kpi.value}
+                  icon={getIcon(kpi.iconType)}
+                  trend={kpi.trend}
+                  trendUp={kpi.trendUp}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Row 2: Asset Stats (3 Cards) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <StatCard
@@ -563,79 +641,85 @@ export default function App() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card title="Product Sales Distribution" subtitle="Revenue share by product category">
-            <div className="h-[300px] w-full mt-4">
+        {visibleCharts.productSales && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card title="Product Sales Distribution" subtitle="Revenue share by product category">
+              <div className="h-[300px] w-full mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={productSales}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {productSales.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend verticalAlign="bottom" height={36} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+
+            {visibleCharts.kpiProgress && (
+              <Card title="Divisional KPI Progress" subtitle="Realization progress across departments">
+                <div className="mt-6 space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                  {kpiData.map((kpi, idx) => (
+                    <div key={idx} className="space-y-1">
+                      <div className="flex justify-between text-xs font-medium text-slate-700">
+                        <span className="truncate max-w-[200px]">{kpi.division}</span>
+                        <span>{kpi.progress}%</span>
+                      </div>
+                      <div className="h-2 w-full bg-slate-100/50 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${kpi.progress}%` }}
+                          transition={{ duration: 1, delay: idx * 0.05 }}
+                          className={cn(
+                            "h-full rounded-full transition-all duration-1000",
+                            kpi.progress > 90 ? "bg-orange-500" :
+                              kpi.progress > 75 ? "bg-indigo-600" :
+                                "bg-orange-400"
+                          )}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {/* Expense Trend - Moved here for correct alignment */}
+        {visibleCharts.expenseTrend && (
+          <Card title="Expense Trend" subtitle="Monthly operational costs vs revenue">
+            <div className="h-[350px] w-full mt-4">
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={productSales}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {productSales.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend verticalAlign="bottom" height={36} />
-                </PieChart>
+                <LineChart data={revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#64748B', fontSize: 10 }}
+                    tickFormatter={(value) => `Rp${(value / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }} />
+                  <Legend iconType="circle" />
+                  <Line type="monotone" dataKey="revenue" name="Revenue" stroke="#4F46E5" strokeWidth={3} dot={{ r: 4, fill: '#4F46E5', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 8 }} />
+                  <Line type="monotone" dataKey="expense" name="Expense" stroke="#EF4444" strokeWidth={3} strokeDasharray="5 5" dot={{ r: 4, fill: '#EF4444', strokeWidth: 2, stroke: '#fff' }} />
+                </LineChart>
               </ResponsiveContainer>
             </div>
           </Card>
-
-          <Card title="Divisional KPI Progress" subtitle="Realization progress across departments">
-            <div className="mt-6 space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-              {kpiData.map((kpi, idx) => (
-                <div key={idx} className="space-y-1">
-                  <div className="flex justify-between text-xs font-medium text-slate-700">
-                    <span className="truncate max-w-[200px]">{kpi.division}</span>
-                    <span>{kpi.progress}%</span>
-                  </div>
-                  <div className="h-2 w-full bg-slate-100/50 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${kpi.progress}%` }}
-                      transition={{ duration: 1, delay: idx * 0.05 }}
-                      className={cn(
-                        "h-full rounded-full transition-all duration-1000",
-                        kpi.progress > 90 ? "bg-orange-500" :
-                          kpi.progress > 75 ? "bg-indigo-600" :
-                            "bg-orange-400"
-                      )}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
-
-        {/* Expense Trend - Moved here for correct alignment */}
-        <Card title="Expense Trend" subtitle="Monthly operational costs vs revenue">
-          <div className="h-[350px] w-full mt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#64748B', fontSize: 10 }}
-                  tickFormatter={(value) => `Rp${(value / 1000).toFixed(0)}k`}
-                />
-                <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }} />
-                <Legend iconType="circle" />
-                <Line type="monotone" dataKey="revenue" name="Revenue" stroke="#4F46E5" strokeWidth={3} dot={{ r: 4, fill: '#4F46E5', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 8 }} />
-                <Line type="monotone" dataKey="expense" name="Expense" stroke="#EF4444" strokeWidth={3} strokeDasharray="5 5" dot={{ r: 4, fill: '#EF4444', strokeWidth: 2, stroke: '#fff' }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
+        )}
 
 
         {/* Financial & Market Analysis Section */}
@@ -652,100 +736,110 @@ export default function App() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <Card title="Net Profit Margin (%)" subtitle="Monthly profitability ratio">
-                <div className="h-[350px] w-full mt-6">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={profitMarginData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-                      />
-                      <Line type="monotone" dataKey="margin" stroke="#8B5CF6" strokeWidth={4} dot={{ r: 6, fill: '#8B5CF6', strokeWidth: 3, stroke: '#fff' }} activeDot={{ r: 10 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
+              {visibleCharts.profitMargin && (
+                <Card title="Net Profit Margin (%)" subtitle="Monthly profitability ratio">
+                  <div className="h-[350px] w-full mt-6">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={profitMarginData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                        <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                        />
+                        <Line type="monotone" dataKey="margin" stroke="#8B5CF6" strokeWidth={4} dot={{ r: 6, fill: '#8B5CF6', strokeWidth: 3, stroke: '#fff' }} activeDot={{ r: 10 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+              )}
 
-              <Card title="Cash Flow Analysis" subtitle="Monthly inflow vs outflow">
-                <div className="h-[350px] w-full mt-6">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={cashFlowData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-                      />
-                      <Legend iconType="circle" />
-                      <Bar dataKey="inflow" name="Cash Inflow" fill="#10B981" radius={[6, 6, 0, 0]} />
-                      <Bar dataKey="outflow" name="Cash Outflow" fill="#EF4444" radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
+              {visibleCharts.cashFlow && (
+                <Card title="Cash Flow Analysis" subtitle="Monthly inflow vs outflow">
+                  <div className="h-[350px] w-full mt-6">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={cashFlowData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                        <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                        />
+                        <Legend iconType="circle" />
+                        <Bar dataKey="inflow" name="Cash Inflow" fill="#10B981" radius={[6, 6, 0, 0]} />
+                        <Bar dataKey="outflow" name="Cash Outflow" fill="#EF4444" radius={[6, 6, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+              )}
 
-              <Card title="Market Share" subtitle="Current market position vs competitors">
-                <div className="h-[350px] w-full mt-6">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={marketShareData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={110}
-                        paddingAngle={0}
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {marketShareData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="#fff" strokeWidth={2} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
+              {visibleCharts.marketShare && (
+                <Card title="Market Share" subtitle="Current market position vs competitors">
+                  <div className="h-[350px] w-full mt-6">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={marketShareData}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={110}
+                          paddingAngle={0}
+                          dataKey="value"
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {marketShareData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="#fff" strokeWidth={2} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+              )}
 
-              <Card title="Market Expansion by Segmentation" subtitle="Sales performance by segment (Units)">
-                <div className="h-[350px] w-full mt-6">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={segmentationData} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
-                      <XAxis type="number" hide />
-                      <YAxis dataKey="segment" type="category" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11 }} width={120} />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-                      />
-                      <Bar dataKey="value" fill="#3B82F6" radius={[0, 6, 6, 0]} barSize={24} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
+              {visibleCharts.segmentation && (
+                <Card title="Market Expansion by Segmentation" subtitle="Sales performance by segment (Units)">
+                  <div className="h-[350px] w-full mt-6">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={segmentationData} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
+                        <XAxis type="number" hide />
+                        <YAxis dataKey="segment" type="category" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11 }} width={120} />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                        />
+                        <Bar dataKey="value" fill="#3B82F6" radius={[0, 6, 6, 0]} barSize={24} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+              )}
 
-              <Card title="Accounts Receivable Turnover Ratio" subtitle="Efficiency in collecting receivables" className="lg:col-span-2">
-                <div className="h-[350px] w-full mt-6">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={arTurnoverData}>
-                      <defs>
-                        <linearGradient id="colorRatio" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.2} />
-                          <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-                      />
-                      <Area type="monotone" dataKey="ratio" stroke="#F59E0B" fillOpacity={1} fill="url(#colorRatio)" strokeWidth={4} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
+              {visibleCharts.arTurnover && (
+                <Card title="Accounts Receivable Turnover Ratio" subtitle="Efficiency in collecting receivables" className="lg:col-span-2">
+                  <div className="h-[350px] w-full mt-6">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={arTurnoverData}>
+                        <defs>
+                          <linearGradient id="colorRatio" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.2} />
+                            <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                        <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                        />
+                        <Area type="monotone" dataKey="ratio" stroke="#F59E0B" fillOpacity={1} fill="url(#colorRatio)" strokeWidth={4} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+              )}
             </div>
           </div>
         </div>
@@ -796,8 +890,113 @@ export default function App() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+                  {/* Dashboard Layout Settings */}
+                  <section className="p-5 bg-slate-900 rounded-2xl border border-slate-800 text-white shadow-xl">
+                    <h3 className="text-sm font-bold text-orange-400 mb-4 flex items-center gap-2">
+                      <LayoutDashboard className="w-5 h-5" />
+                      Dashboard Layout Settings
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6">
+                      {[
+                        { key: 'expenseTrend', label: 'Expense Trend' },
+                        { key: 'profitMargin', label: 'Profit Margin' },
+                        { key: 'cashFlow', label: 'Cash Flow' },
+                        { key: 'marketShare', label: 'Market Share' },
+                        { key: 'segmentation', label: 'Market Segmentation' },
+                        { key: 'arTurnover', label: 'AR Turnover' },
+                        { key: 'productSales', label: 'Product Sales' },
+                        { key: 'kpiProgress', label: 'KPI Progress' },
+                      ].map((chart) => (
+                        <label key={chart.key} className="flex items-center gap-3 cursor-pointer group">
+                          <input
+                            type="checkbox"
+                            checked={visibleCharts[chart.key]}
+                            onChange={() => handleToggleChart(chart.key)}
+                            className="w-5 h-5 rounded-lg border-slate-700 bg-slate-800 text-orange-500 focus:ring-orange-500 focus:ring-offset-slate-900"
+                          />
+                          <span className="text-sm font-semibold text-slate-300 group-hover:text-white transition-colors">{chart.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </section>
+
+                  {/* KPI Card Manager */}
+                  <section className="p-5 bg-white rounded-2xl border-2 border-dashed border-slate-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <Plus className="w-5 h-5 text-indigo-600" />
+                        KPI Card Manager
+                      </h3>
+                      <button
+                        onClick={handleAddCustomKpi}
+                        className="text-xs font-bold bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-all flex items-center gap-1.5 shadow-sm"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add New Card
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {customKpis.length === 0 && (
+                        <p className="text-xs text-slate-400 text-center py-4 bg-slate-50 rounded-xl border border-dashed border-slate-100 italic">No custom cards added yet. Click "Add New Card" to begin.</p>
+                      )}
+                      {customKpis.map((kpi) => (
+                        <div key={kpi.id} className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm space-y-4 relative group">
+                          <button
+                            onClick={() => handleDeleteCustomKpi(kpi.id)}
+                            className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase">Card Title</label>
+                              <input
+                                type="text"
+                                value={kpi.title}
+                                onChange={(e) => handleUpdateCustomKpi(kpi.id, 'title', e.target.value)}
+                                className="w-full px-2 py-1.5 bg-slate-50 border border-slate-100 rounded text-xs font-bold text-slate-700"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase">Display Value</label>
+                              <input
+                                type="text"
+                                value={kpi.value}
+                                onChange={(e) => handleUpdateCustomKpi(kpi.id, 'value', e.target.value)}
+                                className="w-full px-2 py-1.5 bg-slate-50 border border-slate-100 rounded text-xs font-bold text-slate-700"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase">Trend Text</label>
+                              <input
+                                type="text"
+                                value={kpi.trend}
+                                onChange={(e) => handleUpdateCustomKpi(kpi.id, 'trend', e.target.value)}
+                                className="w-full px-2 py-1.5 bg-slate-50 border border-slate-100 rounded text-xs font-bold text-slate-700"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase">Icon</label>
+                              <select
+                                value={kpi.iconType}
+                                onChange={(e) => handleUpdateCustomKpi(kpi.id, 'iconType', e.target.value)}
+                                className="w-full px-2 py-1.5 bg-slate-50 border border-slate-100 rounded text-xs font-bold text-slate-700"
+                              >
+                                {['DollarSign', 'Users', 'TrendingUp', 'Target', 'Box', 'Award', 'Monitor', 'Briefcase'].map(icon => (
+                                  <option key={icon} value={icon}>{icon}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
                   {/* Bulk Import */}
-                  <section className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                  <section className="p-4 bg-slate-50 rounded-xl border border-slate-200">
                     <h3 className="text-sm font-bold text-indigo-900 mb-3 flex items-center gap-2">
                       <UploadCloud className="w-5 h-5" />
                       Bulk Import (CSV/Excel)
