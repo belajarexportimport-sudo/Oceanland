@@ -34,7 +34,7 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const COLORS = ['#3B82F6', '#FF7A30', '#10B981', '#8B5CF6', '#F59E0B', '#6366F1'];
+const COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'];
 const STORAGE_KEY = 'oseanland_dashboard_data';
 
 export default function App() {
@@ -360,7 +360,7 @@ export default function App() {
               <motion.h1
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="text-4xl font-extrabold tracking-tighter text-white drop-shadow-md"
+                className="text-4xl font-black tracking-tight text-white drop-shadow-lg"
               >
                 Executive Summary Dashboard
               </motion.h1>
@@ -684,7 +684,7 @@ export default function App() {
                 </div>
               </Card>
 
-              <Card title="Market Share" subtitle="Current market position">
+              <Card title="Market Share" subtitle="Current market position vs competitors">
                 <div className="h-[350px] w-full mt-6">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -692,14 +692,13 @@ export default function App() {
                         data={marketShareData}
                         cx="50%"
                         cy="50%"
-                        innerRadius={80}
                         outerRadius={110}
-                        paddingAngle={8}
+                        paddingAngle={0}
                         dataKey="value"
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       >
                         {marketShareData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="#fff" strokeWidth={2} />
                         ))}
                       </Pie>
                       <Tooltip />
@@ -724,7 +723,7 @@ export default function App() {
                 </div>
               </Card>
 
-              <Card title="AR Turnover Ratio" subtitle="Efficiency in collecting receivables" className="lg:col-span-2">
+              <Card title="Accounts Receivable Turnover Ratio" subtitle="Efficiency in collecting receivables" className="lg:col-span-2">
                 <div className="h-[350px] w-full mt-6">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={arTurnoverData}>
@@ -1059,9 +1058,9 @@ export default function App() {
                   </section>
 
                   <section>
-                    <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-indigo-600 uppercase tracking-wider mb-4 flex items-center gap-2">
                       <TrendingUp className="w-4 h-4" />
-                      AR Turnover Ratio
+                      Accounts Receivable Turnover Ratio
                     </h3>
                     <div className="grid grid-cols-3 gap-3">
                       {arTurnoverData.map((data, idx) => (
