@@ -360,14 +360,16 @@ export default function App() {
               <motion.h1
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="text-4xl font-black tracking-tight text-white drop-shadow-lg"
+                className="text-4xl font-black tracking-tight text-slate-900"
               >
-                Executive Summary Dashboard
+                Executive Summary Oseanland
               </motion.h1>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-base font-bold text-orange-50/95">PT Oseanland Indonesia Group</span>
-                <span className="text-white/40 text-sm">|</span>
-                <p className="text-white/80 text-sm font-medium tracking-wide">Performance overview and strategic insights</p>
+              <div className="flex items-center gap-3 mt-1.5 px-0.5">
+                <span className="text-base font-bold text-orange-950">PT Oseanland Indonesia Group</span>
+                <span className="w-px h-3.5 bg-orange-950/20 shadow-sm" />
+                <p className="text-slate-800 text-sm font-semibold tracking-wide flex items-center">
+                  Performance overview and strategic insights
+                </p>
               </div>
             </div>
           </div>
@@ -377,34 +379,34 @@ export default function App() {
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
-                className="appearance-none bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl px-5 py-2.5 pr-12 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm cursor-pointer transition-all"
+                className="appearance-none bg-white hover:bg-white/90 border border-white/20 rounded-xl px-5 py-2.5 pr-12 text-sm font-bold text-slate-900 shadow-md focus:outline-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer transition-all"
               >
                 {['2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'].map(y => (
-                  <option key={y} className="text-slate-900">{y}</option>
+                  <option key={y} value={y} className="text-slate-900">{y}</option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70 pointer-events-none group-hover:text-white transition-colors" />
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none group-hover:text-slate-700 transition-colors" />
             </div>
 
             <div className="relative group">
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
-                className="appearance-none bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl px-5 py-2.5 pr-12 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm cursor-pointer transition-all"
+                className="appearance-none bg-white hover:bg-white/90 border border-white/20 rounded-xl px-5 py-2.5 pr-12 text-sm font-bold text-slate-900 shadow-md focus:outline-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer transition-all"
               >
-                <option className="text-slate-900">All Months</option>
+                <option value="All Months" className="text-slate-900">All Months</option>
                 {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
-                  <option key={m} className="text-slate-900">{m}</option>
+                  <option key={m} value={m} className="text-slate-900">{m}</option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70 pointer-events-none group-hover:text-white transition-colors" />
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none group-hover:text-slate-700 transition-colors" />
             </div>
 
             <button
               onClick={() => setShowEditPanel(true)}
-              className="bg-white/10 hover:bg-white border border-white/20 hover:text-orange-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold backdrop-blur-sm transition-all flex items-center gap-2 shadow-lg"
+              className="bg-white hover:bg-orange-50 border border-white/20 text-slate-900 px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-lg"
             >
-              <Settings className="w-4 h-4" />
+              <Settings className="w-4 h-4 text-slate-500" />
               Manage Data
             </button>
 
@@ -422,8 +424,8 @@ export default function App() {
 
         {lastUpdated && (
           <div className="max-w-7xl mx-auto mt-4">
-            <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md text-white/90 text-[11px] font-bold rounded-full border border-white/20">
-              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/40 backdrop-blur-md text-orange-950 text-[11px] font-bold rounded-full border border-white/30 shadow-sm">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
               Live Data Source Linked • Last Sync: {lastUpdated}
             </span>
           </div>
