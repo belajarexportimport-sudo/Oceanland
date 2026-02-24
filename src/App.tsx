@@ -441,24 +441,24 @@ export default function App() {
             trendUp={true}
           />
           <StatCard
-            title="Total Expense"
-            value={formatCurrency(stats.totalExpense)}
-            icon={<span className="font-bold text-red-600 text-lg">Rp</span>}
-            trend="+5.4%"
-            trendUp={false}
-          />
-          <StatCard
             title="Total Profit"
             value={formatCurrency(stats.totalProfit)}
-            icon={<span className="font-bold text-emerald-600 text-lg">Rp</span>}
+            icon={<span className="font-extrabold text-emerald-600 text-lg">Rp</span>}
             trend="+15.2%"
             trendUp={true}
           />
           <StatCard
-            title="Margin"
-            value={`${stats.margin}%`}
-            icon={<TrendingUp className="w-5 h-5 text-indigo-600" />}
-            trend="+2.1%"
+            title="Sales Conversion"
+            value={`${stats.conversionRate}%`}
+            icon={<TrendingUp className="w-5 h-5 text-emerald-600" />}
+            trend="+0.8%"
+            trendUp={true}
+          />
+          <StatCard
+            title="Customer Satisfaction"
+            value={`${stats.customerSatisfaction}/5.0`}
+            icon={<MessageSquare className="w-5 h-5 text-orange-500" />}
+            trend="+0.2"
             trendUp={true}
           />
         </div>
@@ -601,9 +601,9 @@ export default function App() {
                       transition={{ duration: 1, delay: idx * 0.05 }}
                       className={cn(
                         "h-full rounded-full transition-all duration-1000",
-                        kpi.progress > 90 ? "bg-blue-500" :
-                          kpi.progress > 75 ? "bg-orange-500" :
-                            "bg-amber-400"
+                        kpi.progress > 90 ? "bg-orange-500" :
+                          kpi.progress > 75 ? "bg-indigo-600" :
+                            "bg-orange-400"
                       )}
                     />
                   </div>
@@ -612,6 +612,28 @@ export default function App() {
             </div>
           </Card>
         </div>
+
+        {/* Expense Trend - Moved here for correct alignment */}
+        <Card title="Expense Trend" subtitle="Monthly operational costs vs revenue">
+          <div className="h-[350px] w-full mt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={revenueData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#64748B', fontSize: 10 }}
+                  tickFormatter={(value) => `Rp${(value / 1000).toFixed(0)}k`}
+                />
+                <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }} />
+                <Legend iconType="circle" />
+                <Line type="monotone" dataKey="revenue" name="Revenue" stroke="#4F46E5" strokeWidth={3} dot={{ r: 4, fill: '#4F46E5', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 8 }} />
+                <Line type="monotone" dataKey="expense" name="Expense" stroke="#EF4444" strokeWidth={3} strokeDasharray="5 5" dot={{ r: 4, fill: '#EF4444', strokeWidth: 2, stroke: '#fff' }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
 
 
         {/* Financial & Market Analysis Section */}
@@ -727,27 +749,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* Expense Trend */}
-        <Card title="Expense Trend" subtitle="Monthly operational costs vs revenue">
-          <div className="h-[300px] w-full mt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#64748B', fontSize: 10 }}
-                  tickFormatter={(value) => `Rp${(value / 1000).toFixed(0)}k`}
-                />
-                <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                <Legend />
-                <Line type="monotone" dataKey="revenue" name="Revenue" stroke="#4F46E5" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                <Line type="monotone" dataKey="expense" name="Expense" stroke="#EF4444" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
       </main>
 
       {/* Edit Panel Overlay */}
