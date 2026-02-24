@@ -770,9 +770,20 @@ export default function App() {
                 className="fixed right-0 top-0 bottom-0 w-full max-w-xl bg-white shadow-2xl z-50 flex flex-col"
               >
                 <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0">
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-900">Manage Data for {selectedYear}</h2>
-                    <p className="text-sm text-slate-500">Update values to see live changes</p>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-3">
+                      <h2 className="text-xl font-bold text-slate-900">Manage Data</h2>
+                      <select
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(e.target.value)}
+                        className="bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-sm font-bold text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                      >
+                        {['2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'].map(y => (
+                          <option key={y} value={y}>{y}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <p className="text-sm text-slate-500">Update values for the selected year</p>
                   </div>
                   <button
                     onClick={() => setShowEditPanel(false)}
