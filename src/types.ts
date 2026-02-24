@@ -32,30 +32,36 @@ export interface RevenueData {
 export interface ProductSalesData {
   name: string;
   value: number;
+  year?: string;
 }
 
 export interface GrowthRateData {
   period: string;
   rate: number;
+  year?: string;
 }
 
 export interface ProfitMarginData {
   month: string;
   margin: number;
+  year?: string;
 }
 
 export interface CashFlowData {
   month: string;
   inflow: number;
   outflow: number;
+  year?: string;
 }
 
 export interface MarketSegmentData {
   segment: string;
   value: number;
+  year?: string;
 }
 
 export interface ARTurnoverData {
   month: string;
   ratio: number;
+  year?: string;
 }

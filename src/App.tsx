@@ -42,18 +42,19 @@ export default function App() {
   const [selectedMonth, setSelectedMonth] = useState('All Months');
   const [showEditPanel, setShowEditPanel] = useState(false);
 
-  // Dashboard State
-  const [kpiData, setKpiData] = useState(MOCK_KPI_DATA);
-  const [revenueData, setRevenueData] = useState(MOCK_REVENUE_DATA.filter(d => d.year === '2024'));
-  const [budgetData, setBudgetData] = useState(MOCK_BUDGET_DATA);
-  const [productSales, setProductSales] = useState(MOCK_PRODUCT_SALES);
-  const [growthRate, setGrowthRate] = useState(MOCK_GROWTH_RATE);
-  const [stats, setStats] = useState(SUMMARY_STATS);
-  const [profitMarginData, setProfitMarginData] = useState(MOCK_PROFIT_MARGIN_DATA);
-  const [cashFlowData, setCashFlowData] = useState(MOCK_CASHFLOW_DATA);
-  const [marketShareData, setMarketShareData] = useState(MOCK_MARKET_SHARE_DATA);
-  const [segmentationData, setSegmentationData] = useState(MOCK_SEGMENTATION_DATA);
-  const [arTurnoverData, setArTurnoverData] = useState(MOCK_AR_TURNOVER_DATA);
+  // Master Dashboard State
+  const [allKpiData, setAllKpiData] = useState<any[]>([]);
+  const [allRevenueData, setAllRevenueData] = useState<any[]>([]);
+  const [allBudgetData, setAllBudgetData] = useState<any[]>([]);
+  const [allProductSales, setAllProductSales] = useState<any[]>([]);
+  const [allGrowthRate, setAllGrowthRate] = useState<any[]>([]);
+  const [allStats, setAllStats] = useState<{ [year: string]: typeof SUMMARY_STATS }>({});
+  const [allProfitMarginData, setAllProfitMarginData] = useState<any[]>([]);
+  const [allCashFlowData, setAllCashFlowData] = useState<any[]>([]);
+  const [allMarketShareData, setAllMarketShareData] = useState<any[]>([]);
+  const [allSegmentationData, setAllSegmentationData] = useState<any[]>([]);
+  const [allArTurnoverData, setAllArTurnoverData] = useState<any[]>([]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string>('');
 
@@ -62,21 +63,34 @@ export default function App() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        if (parsed.kpiData) setKpiData(parsed.kpiData);
-        if (parsed.revenueData) setRevenueData(parsed.revenueData);
-        if (parsed.budgetData) setBudgetData(parsed.budgetData);
-        if (parsed.productSales) setProductSales(parsed.productSales);
-        if (parsed.growthRate) setGrowthRate(parsed.growthRate);
-        if (parsed.stats) setStats(parsed.stats);
-        if (parsed.profitMarginData) setProfitMarginData(parsed.profitMarginData);
-        if (parsed.cashFlowData) setCashFlowData(parsed.cashFlowData);
-        if (parsed.marketShareData) setMarketShareData(parsed.marketShareData);
-        if (parsed.segmentationData) setSegmentationData(parsed.segmentationData);
-        if (parsed.arTurnoverData) setArTurnoverData(parsed.arTurnoverData);
+        const p = JSON.parse(saved);
+        if (p.allKpiData) setAllKpiData(p.allKpiData);
+        if (p.allRevenueData) setAllRevenueData(p.allRevenueData);
+        if (p.allBudgetData) setAllBudgetData(p.allBudgetData);
+        if (p.allProductSales) setAllProductSales(p.allProductSales);
+        if (p.allGrowthRate) setAllGrowthRate(p.allGrowthRate);
+        if (p.allStats) setAllStats(p.allStats);
+        if (p.allProfitMarginData) setAllProfitMarginData(p.allProfitMarginData);
+        if (p.allCashFlowData) setAllCashFlowData(p.allCashFlowData);
+        if (p.allMarketShareData) setAllMarketShareData(p.allMarketShareData);
+        if (p.allSegmentationData) setAllSegmentationData(p.allSegmentationData);
+        if (p.allArTurnoverData) setAllArTurnoverData(p.allArTurnoverData);
       } catch (e) {
         console.error("Failed to load dashboard data", e);
       }
+    } else {
+      // Seed with mock data
+      setAllKpiData(MOCK_KPI_DATA.map(d => ({ ...d, year: '2024' })));
+      setAllRevenueData(MOCK_REVENUE_DATA);
+      setAllBudgetData(MOCK_BUDGET_DATA.map(d => ({ ...d, year: '2024' })));
+      setAllProductSales(MOCK_PRODUCT_SALES.map(d => ({ ...d, year: '2024' })));
+      setAllGrowthRate(MOCK_GROWTH_RATE.map(d => ({ ...d, year: '2024' })));
+      setAllStats({ '2024': SUMMARY_STATS, '2023': { ...SUMMARY_STATS, totalLeads: 950 } });
+      setAllProfitMarginData(MOCK_PROFIT_MARGIN_DATA.map(d => ({ ...d, year: '2024' })));
+      setAllCashFlowData(MOCK_CASHFLOW_DATA.map(d => ({ ...d, year: '2024' })));
+      setAllMarketShareData(MOCK_MARKET_SHARE_DATA.map(d => ({ ...d, year: '2024' })));
+      setAllSegmentationData(MOCK_SEGMENTATION_DATA.map(d => ({ ...d, year: '2024' })));
+      setAllArTurnoverData(MOCK_AR_TURNOVER_DATA.map(d => ({ ...d, year: '2024' })));
     }
 
     const loadLiveData = async () => {
@@ -84,10 +98,9 @@ export default function App() {
       const liveData = await fetchDashboardData();
       if (liveData) {
         const mapped = mapGSheetToDashboard(liveData);
-        if (mapped.kpiData.length) setKpiData(mapped.kpiData);
-        if (mapped.revenueData.length) setRevenueData(mapped.revenueData);
-        if (mapped.budgetData.length) setBudgetData(mapped.budgetData);
-        if (Object.keys(mapped.stats).length) setStats(mapped.stats);
+        if (mapped.kpiData.length) setAllKpiData(prev => [...prev.filter(d => d.year !== '2024'), ...mapped.kpiData.map((d: any) => ({ ...d, year: '2024' }))]);
+        if (mapped.revenueData.length) setAllRevenueData(prev => [...prev.filter(d => d.year !== '2024'), ...mapped.revenueData.map((d: any) => ({ ...d, year: '2024' }))]);
+        if (Object.keys(mapped.stats).length) setAllStats(prev => ({ ...prev, '2024': mapped.stats }));
         setLastUpdated(new Date().toLocaleTimeString());
       }
       setIsLoading(false);
@@ -96,78 +109,125 @@ export default function App() {
     loadLiveData();
   }, []);
 
+  // Derived Values for UI
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+
+  const revenueData = React.useMemo(() => allRevenueData.filter(d => d.year === selectedYear), [allRevenueData, selectedYear]);
+  const kpiData = React.useMemo(() => allKpiData.filter(d => d.year === selectedYear), [allKpiData, selectedYear]);
+  const budgetData = React.useMemo(() => allBudgetData.filter(d => d.year === selectedYear), [allBudgetData, selectedYear]);
+  const productSales = React.useMemo(() => allProductSales.filter(d => d.year === selectedYear), [allProductSales, selectedYear]);
+  const growthRate = React.useMemo(() => allGrowthRate.filter(d => d.year === selectedYear), [allGrowthRate, selectedYear]);
+  const stats = React.useMemo(() => allStats[selectedYear] || SUMMARY_STATS, [allStats, selectedYear]);
+  const profitMarginData = React.useMemo(() => allProfitMarginData.filter(d => d.year === selectedYear), [allProfitMarginData, selectedYear]);
+  const cashFlowData = React.useMemo(() => allCashFlowData.filter(d => d.year === selectedYear), [allCashFlowData, selectedYear]);
+  const marketShareData = React.useMemo(() => allMarketShareData.filter(d => d.year === selectedYear), [allMarketShareData, selectedYear]);
+  const segmentationData = React.useMemo(() => allSegmentationData.filter(d => d.year === selectedYear), [allSegmentationData, selectedYear]);
+  const arTurnoverData = React.useMemo(() => allArTurnoverData.filter(d => d.year === selectedYear), [allArTurnoverData, selectedYear]);
+
+  // Handle New Year Initialization
+  React.useEffect(() => {
+    if (!revenueData.length && !isLoading) {
+      // Initialize year with defaults
+      setAllRevenueData(prev => [...prev, ...months.map(m => ({ month: m, revenue: 0, target: 0, expense: 0, year: selectedYear }))]);
+      setAllKpiData(prev => [...prev, ...DIVISIONS.map(div => ({ division: div, progress: 0, target: 100, actual: 0, year: selectedYear }))]);
+      setAllBudgetData(prev => [...prev, ...MOCK_BUDGET_DATA.map(d => ({ ...d, budget: 0, actual: 0, year: selectedYear }))]);
+      setAllProductSales(prev => [...prev, ...MOCK_PRODUCT_SALES.map(d => ({ ...d, value: 0, year: selectedYear }))]);
+      setAllGrowthRate(prev => [...prev, ...quarters.map(q => ({ period: q, rate: 0, year: selectedYear }))]);
+      setAllStats(prev => ({ ...prev, [selectedYear]: { ...SUMMARY_STATS, totalLeads: 0, totalExpense: 0, totalProfit: 0, margin: 0 } }));
+      setAllProfitMarginData(prev => [...prev, ...months.slice(0, 6).map(m => ({ month: m, margin: 0, year: selectedYear }))]);
+      setAllCashFlowData(prev => [...prev, ...months.slice(0, 6).map(m => ({ month: m, inflow: 0, outflow: 0, year: selectedYear }))]);
+      setAllMarketShareData(prev => [...prev, ...MOCK_MARKET_SHARE_DATA.map(d => ({ ...d, value: 0, year: selectedYear }))]);
+      setAllSegmentationData(prev => [...prev, ...MOCK_SEGMENTATION_DATA.map(d => ({ ...d, value: 0, year: selectedYear }))]);
+      setAllArTurnoverData(prev => [...prev, ...months.slice(0, 6).map(m => ({ month: m, ratio: 0, year: selectedYear }))]);
+    }
+  }, [selectedYear, revenueData.length, isLoading]);
+
   const saveToDisk = () => {
     const data = {
-      kpiData, revenueData, budgetData, productSales,
-      growthRate, stats,
-      profitMarginData, cashFlowData, marketShareData, segmentationData,
-      arTurnoverData
+      allKpiData, allRevenueData, allBudgetData, allProductSales,
+      allGrowthRate, allStats,
+      allProfitMarginData, allCashFlowData, allMarketShareData, allSegmentationData,
+      allArTurnoverData
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
 
-  const handleStatChange = (key: keyof typeof SUMMARY_STATS, value: number) => {
-    setStats(prev => ({ ...prev, [key]: value }));
+  const handleStatChange = (key: keyof typeof SUMMARY_STATS, value: any) => {
+    setAllStats(prev => ({
+      ...prev,
+      [selectedYear]: { ...stats, [key]: value }
+    }));
   };
 
   const handleKpiChange = (index: number, field: 'progress' | 'actual', value: number) => {
-    const newData = [...kpiData];
-    newData[index] = { ...newData[index], [field]: value };
-    setKpiData(newData);
+    const targetItem = kpiData[index];
+    setAllKpiData(prev => prev.map(item =>
+      item === targetItem ? { ...item, [field]: value } : item
+    ));
   };
 
   const handleRevenueChange = (index: number, field: 'revenue' | 'target' | 'expense', value: number) => {
-    const newData = [...revenueData];
-    newData[index] = { ...newData[index], [field]: value };
-    setRevenueData(newData);
+    const targetItem = revenueData[index];
+    setAllRevenueData(prev => prev.map(item =>
+      item === targetItem ? { ...item, [field]: value } : item
+    ));
   };
 
   const handleBudgetChange = (index: number, field: 'budget' | 'actual', value: number) => {
-    const newData = [...budgetData];
-    newData[index] = { ...newData[index], [field]: value };
-    setBudgetData(newData);
+    const targetItem = budgetData[index];
+    setAllBudgetData(prev => prev.map(item =>
+      item === targetItem ? { ...item, [field]: value } : item
+    ));
   };
 
   const handleProductChange = (index: number, value: number) => {
-    const newData = [...productSales];
-    newData[index] = { ...newData[index], value };
-    setProductSales(newData);
+    const targetItem = productSales[index];
+    setAllProductSales(prev => prev.map(item =>
+      item === targetItem ? { ...item, value } : item
+    ));
   };
 
   const handleGrowthChange = (index: number, rate: number) => {
-    const newData = [...growthRate];
-    newData[index] = { ...newData[index], rate };
-    setGrowthRate(newData);
+    const targetItem = growthRate[index];
+    setAllGrowthRate(prev => prev.map(item =>
+      item === targetItem ? { ...item, rate } : item
+    ));
   };
 
   const handleProfitMarginChange = (index: number, margin: number) => {
-    const newData = [...profitMarginData];
-    newData[index] = { ...newData[index], margin };
-    setProfitMarginData(newData);
+    const targetItem = profitMarginData[index];
+    setAllProfitMarginData(prev => prev.map(item =>
+      item === targetItem ? { ...item, margin } : item
+    ));
   };
 
   const handleCashFlowChange = (index: number, field: 'inflow' | 'outflow', value: number) => {
-    const newData = [...cashFlowData];
-    newData[index] = { ...newData[index], [field]: value };
-    setCashFlowData(newData);
+    const targetItem = cashFlowData[index];
+    setAllCashFlowData(prev => prev.map(item =>
+      item === targetItem ? { ...item, [field]: value } : item
+    ));
   };
 
   const handleMarketShareChange = (index: number, value: number) => {
-    const newData = [...marketShareData];
-    newData[index] = { ...newData[index], value };
-    setMarketShareData(newData);
+    const targetItem = marketShareData[index];
+    setAllMarketShareData(prev => prev.map(item =>
+      item === targetItem ? { ...item, value } : item
+    ));
   };
 
   const handleSegmentationChange = (index: number, value: number) => {
-    const newData = [...segmentationData];
-    newData[index] = { ...newData[index], value };
-    setSegmentationData(newData);
+    const targetItem = segmentationData[index];
+    setAllSegmentationData(prev => prev.map(item =>
+      item === targetItem ? { ...item, value } : item
+    ));
   };
 
   const handleArTurnoverChange = (index: number, ratio: number) => {
-    const newData = [...arTurnoverData];
-    newData[index] = { ...newData[index], ratio };
-    setArTurnoverData(newData);
+    const targetItem = arTurnoverData[index];
+    setAllArTurnoverData(prev => prev.map(item =>
+      item === targetItem ? { ...item, ratio } : item
+    ));
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'revenue' | 'kpi' | 'budget' | 'all') => {
@@ -189,17 +249,21 @@ export default function App() {
             const lowerName = name.toLowerCase();
             const rows = sheets[name];
             if (lowerName.includes('revenue') || lowerName.includes('monthly')) {
-              setRevenueData(mapRevenueData(rows));
+              const rows = mapRevenueData(sheets[name]).map(d => ({ ...d, year: selectedYear }));
+              setAllRevenueData(prev => [...prev.filter(d => d.year !== selectedYear), ...rows]);
               importedCount++;
             } else if (lowerName.includes('kpi') || lowerName.includes('performa')) {
-              setKpiData(mapKPIData(rows));
+              const rows = mapKPIData(sheets[name]).map(d => ({ ...d, year: selectedYear }));
+              setAllKpiData(prev => [...prev.filter(d => d.year !== selectedYear), ...rows]);
               importedCount++;
             } else if (lowerName.includes('budget') || lowerName.includes('anggaran')) {
-              setBudgetData(mapBudgetData(rows));
+              const rows = mapBudgetData(sheets[name]).map(d => ({ ...d, year: selectedYear }));
+              setAllBudgetData(prev => [...prev.filter(d => d.year !== selectedYear), ...rows]);
               importedCount++;
             } else if (lowerName.includes('turnover') || lowerName.includes('ar turnover')) {
               const { mapArTurnoverData } = await import('./utils/dataUtils');
-              setArTurnoverData(mapArTurnoverData(rows));
+              const rows = mapArTurnoverData(sheets[name]).map(d => ({ ...d, year: selectedYear }));
+              setAllArTurnoverData(prev => [...prev.filter(d => d.year !== selectedYear), ...rows]);
               importedCount++;
             }
           }
@@ -208,16 +272,34 @@ export default function App() {
             alert(`Smart Import: Successfully imported ${importedCount} sheets!`);
           } else if (type !== 'all') {
             const rows = sheets[sheetNames[0]];
-            if (type === 'revenue') setRevenueData(mapRevenueData(rows));
-            if (type === 'kpi') setKpiData(mapKPIData(rows));
-            if (type === 'budget') setBudgetData(mapBudgetData(rows));
+            if (type === 'revenue') {
+              const items = mapRevenueData(rows).map(d => ({ ...d, year: selectedYear }));
+              setAllRevenueData(prev => [...prev.filter(d => d.year !== selectedYear), ...items]);
+            }
+            if (type === 'kpi') {
+              const items = mapKPIData(rows).map(d => ({ ...d, year: selectedYear }));
+              setAllKpiData(prev => [...prev.filter(d => d.year !== selectedYear), ...items]);
+            }
+            if (type === 'budget') {
+              const items = mapBudgetData(rows).map(d => ({ ...d, year: selectedYear }));
+              setAllBudgetData(prev => [...prev.filter(d => d.year !== selectedYear), ...items]);
+            }
             alert(`Imported first sheet "${sheetNames[0]}" as ${type}.`);
           }
         } else {
           const rows = sheets[sheetNames[0]];
-          if (type === 'revenue') setRevenueData(mapRevenueData(rows));
-          if (type === 'kpi') setKpiData(mapKPIData(rows));
-          if (type === 'budget') setBudgetData(mapBudgetData(rows));
+          if (type === 'revenue') {
+            const items = mapRevenueData(rows).map(d => ({ ...d, year: selectedYear }));
+            setAllRevenueData(prev => [...prev.filter(d => d.year !== selectedYear), ...items]);
+          }
+          if (type === 'kpi') {
+            const items = mapKPIData(rows).map(d => ({ ...d, year: selectedYear }));
+            setAllKpiData(prev => [...prev.filter(d => d.year !== selectedYear), ...items]);
+          }
+          if (type === 'budget') {
+            const items = mapBudgetData(rows).map(d => ({ ...d, year: selectedYear }));
+            setAllBudgetData(prev => [...prev.filter(d => d.year !== selectedYear), ...items]);
+          }
           alert(`Successfully imported "${sheetNames[0]}" for ${type}!`);
         }
       } catch (err) {
@@ -230,9 +312,18 @@ export default function App() {
         const content = event.target?.result as string;
         const { rows } = parseCSV(content);
 
-        if (type === 'revenue' || type === 'all') setRevenueData(mapRevenueData(rows));
-        if (type === 'kpi' || type === 'all') setKpiData(mapKPIData(rows));
-        if (type === 'budget' || type === 'all') setBudgetData(mapBudgetData(rows));
+        if (type === 'revenue' || type === 'all') {
+          const items = mapRevenueData(rows).map(d => ({ ...d, year: selectedYear }));
+          setAllRevenueData(prev => [...prev.filter(d => d.year !== selectedYear), ...items]);
+        }
+        if (type === 'kpi' || type === 'all') {
+          const items = mapKPIData(rows).map(d => ({ ...d, year: selectedYear }));
+          setAllKpiData(prev => [...prev.filter(d => d.year !== selectedYear), ...items]);
+        }
+        if (type === 'budget' || type === 'all') {
+          const items = mapBudgetData(rows).map(d => ({ ...d, year: selectedYear }));
+          setAllBudgetData(prev => [...prev.filter(d => d.year !== selectedYear), ...items]);
+        }
 
         alert(`Successfully imported ${rows.length} rows!`);
       };
@@ -288,10 +379,9 @@ export default function App() {
                 onChange={(e) => setSelectedYear(e.target.value)}
                 className="appearance-none bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl px-5 py-2.5 pr-12 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm cursor-pointer transition-all"
               >
-                <option className="text-slate-900">2023</option>
-                <option className="text-slate-900">2024</option>
-                <option className="text-slate-900">2025</option>
-                <option className="text-slate-900">2026</option>
+                {['2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'].map(y => (
+                  <option key={y} className="text-slate-900">{y}</option>
+                ))}
               </select>
               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70 pointer-events-none group-hover:text-white transition-colors" />
             </div>
@@ -320,8 +410,7 @@ export default function App() {
 
             <button
               onClick={() => {
-                setRevenueData(MOCK_REVENUE_DATA.filter(d => d.year === selectedYear));
-                alert(`Dashboard updated for ${selectedMonth} ${selectedYear}`);
+                alert(`Viewing data for ${selectedMonth} ${selectedYear}`);
               }}
               className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-xl hover:scale-105 active:scale-95"
             >
@@ -682,7 +771,7 @@ export default function App() {
               >
                 <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0">
                   <div>
-                    <h2 className="text-xl font-bold text-slate-900">Manage Dashboard Data</h2>
+                    <h2 className="text-xl font-bold text-slate-900">Manage Data for {selectedYear}</h2>
                     <p className="text-sm text-slate-500">Update values to see live changes</p>
                   </div>
                   <button
@@ -785,17 +874,17 @@ export default function App() {
                     <div className="grid grid-cols-1 gap-4">
                       <div className="space-y-1">
                         <label className="text-xs font-medium text-slate-500">Best Employee</label>
-                        <input type="text" value={stats.bestEmployee} onChange={(e) => setStats(prev => ({ ...prev, bestEmployee: e.target.value }))} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
+                        <input type="text" value={stats.bestEmployee} onChange={(e) => handleStatChange('bestEmployee', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
                       </div>
                       <div className="space-y-1">
                         <label className="text-xs font-medium text-slate-500">Best Division</label>
-                        <select value={stats.bestDivision} onChange={(e) => setStats(prev => ({ ...prev, bestDivision: e.target.value }))} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm">
+                        <select value={stats.bestDivision} onChange={(e) => handleStatChange('bestDivision', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm">
                           {DIVISIONS.map(div => <option key={div} value={div}>{div}</option>)}
                         </select>
                       </div>
                       <div className="space-y-1">
                         <label className="text-xs font-medium text-slate-500">Best Attendance</label>
-                        <input type="text" value={stats.bestAttendance} onChange={(e) => setStats(prev => ({ ...prev, bestAttendance: e.target.value }))} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
+                        <input type="text" value={stats.bestAttendance} onChange={(e) => handleStatChange('bestAttendance', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />
                       </div>
                     </div>
                   </section>
