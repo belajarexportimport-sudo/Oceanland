@@ -404,14 +404,14 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FF8C42] via-[#FFB382] to-[#FFF5ED] text-slate-900 font-sans relative overflow-x-hidden">
       {/* Premium Header - Transparent or Integrated */}
-      <div className="pt-12 pb-24 px-4 md:px-8">
+      <div className="pt-8 pb-20 px-4 md:px-8">
         <header className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center gap-5">
-            <div className="p-2 bg-white rounded-2xl shadow-xl border border-white/20 flex items-center justify-center">
+          <div className="flex items-center gap-4">
+            <div className="p-1.5 bg-white rounded-xl shadow-lg border border-white/20 flex items-center justify-center">
               <img
                 src="/assets/logo.png"
                 alt="Logo"
-                className="h-16 w-auto object-contain"
+                className="h-14 w-auto object-contain"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                 }}
@@ -421,65 +421,69 @@ export default function App() {
               <motion.h1
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="text-4xl font-black tracking-tight text-slate-900"
+                className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 leading-tight"
               >
                 Executive Summary Oseanland
               </motion.h1>
-              <div className="flex items-center gap-3 mt-1.5 px-0.5">
-                <span className="text-base font-bold text-orange-950">PT Oseanland Indonesia Group</span>
-                <span className="w-px h-3.5 bg-orange-950/20 shadow-sm" />
-                <p className="text-slate-800 text-sm font-semibold tracking-wide flex items-center">
-                  Performance overview and strategic insights
+              <div className="flex items-center gap-3 mt-1 px-0.5">
+                <span className="text-sm font-bold text-orange-950 uppercase tracking-wider">PT Oseanland Indonesia Group</span>
+                <span className="w-px h-3 bg-orange-950/20" />
+                <p className="text-slate-800 text-xs font-semibold tracking-wide">
+                  Strategic insights & performance
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative group">
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-                className="appearance-none bg-white hover:bg-white/90 border border-white/20 rounded-xl px-5 py-2.5 pr-12 text-sm font-bold text-slate-900 shadow-md focus:outline-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer transition-all"
-              >
-                {['2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'].map(y => (
-                  <option key={y} value={y} className="text-slate-900">{y}</option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none group-hover:text-slate-700 transition-colors" />
+          <div className="flex flex-wrap items-center gap-2 justify-end">
+            <div className="flex items-center gap-2">
+              <div className="relative group">
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  className="appearance-none bg-white hover:bg-white/90 border border-white/10 rounded-xl px-4 py-2 pr-10 text-xs font-bold text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer transition-all"
+                >
+                  {['2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'].map(y => (
+                    <option key={y} value={y} className="text-slate-900">{y}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
+              </div>
+
+              <div className="relative group">
+                <select
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  className="appearance-none bg-white hover:bg-white/90 border border-white/10 rounded-xl px-4 py-2 pr-10 text-xs font-bold text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer transition-all"
+                >
+                  <option value="All Months" className="text-slate-900">All Months</option>
+                  {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
+                    <option key={m} value={m} className="text-slate-900">{m}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
+              </div>
             </div>
 
-            <div className="relative group">
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="appearance-none bg-white hover:bg-white/90 border border-white/20 rounded-xl px-5 py-2.5 pr-12 text-sm font-bold text-slate-900 shadow-md focus:outline-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer transition-all"
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowEditPanel(true)}
+                className="bg-white hover:bg-slate-50 border border-white/10 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-sm"
               >
-                <option value="All Months" className="text-slate-900">All Months</option>
-                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
-                  <option key={m} value={m} className="text-slate-900">{m}</option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none group-hover:text-slate-700 transition-colors" />
+                <Settings className="w-3.5 h-3.5 text-slate-400" />
+                Manage
+              </button>
+
+              <button
+                onClick={() => {
+                  alert(`Viewing data for ${selectedMonth} ${selectedYear}`);
+                }}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg hover:shadow-indigo-500/20 active:scale-95"
+              >
+                <Filter className="w-3.5 h-3.5" />
+                Apply Filters
+              </button>
             </div>
-
-            <button
-              onClick={() => setShowEditPanel(true)}
-              className="bg-white hover:bg-orange-50 border border-white/20 text-slate-900 px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-lg"
-            >
-              <Settings className="w-4 h-4 text-slate-500" />
-              Manage Data
-            </button>
-
-            <button
-              onClick={() => {
-                alert(`Viewing data for ${selectedMonth} ${selectedYear}`);
-              }}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-xl hover:scale-105 active:scale-95"
-            >
-              <Filter className="w-4 h-4" />
-              Apply Filters
-            </button>
           </div>
         </header>
 
