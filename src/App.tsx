@@ -425,6 +425,7 @@ export default function App() {
         </div>
 
         {/* Main Charts Grid */}
+        {/* Main Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-2" title="Revenue vs Target Performance" subtitle="Monthly actual revenue vs targets">
             <div className="h-[350px] w-full mt-4">
@@ -450,24 +451,8 @@ export default function App() {
             </div>
           </Card>
 
-          <Card title="Budget vs Actual" subtitle="Comparison by category">
-            <div className="h-[350px] w-full mt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={budgetData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
-                  <XAxis type="number" hide />
-                  <YAxis dataKey="category" type="category" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 10 }} width={80} />
-                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                  <Legend />
-                  <Bar dataKey="budget" name="Budget" fill="#94A3B8" radius={[0, 4, 4, 0]} barSize={12} />
-                  <Bar dataKey="actual" name="Actual" fill="#4F46E5" radius={[0, 4, 4, 0]} barSize={12} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-
           <Card title="Revenue Growth Rate" subtitle="Quarterly percentage growth">
-            <div className="h-[300px] w-full mt-4">
+            <div className="h-[350px] w-full mt-4">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={growthRate}>
                   <defs>
@@ -485,8 +470,9 @@ export default function App() {
               </ResponsiveContainer>
             </div>
           </Card>
+        </div>
 
-
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card title="Product Sales Distribution" subtitle="Revenue share by product category">
             <div className="h-[300px] w-full mt-4">
               <ResponsiveContainer width="100%" height="100%">
@@ -511,7 +497,7 @@ export default function App() {
             </div>
           </Card>
 
-          <Card className="lg:col-span-1" title="Divisional KPI Progress" subtitle="Realization progress across departments">
+          <Card title="Divisional KPI Progress" subtitle="Realization progress across departments">
             <div className="mt-6 space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
               {kpiData.map((kpi, idx) => (
                 <div key={idx} className="space-y-1">
